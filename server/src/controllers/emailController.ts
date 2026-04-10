@@ -60,9 +60,39 @@ export const getEmailMessages = async (req: AuthRequest, res: Response) => {
     const messages = await prisma.message.findMany({
       where: { tempEmailId: parseInt(id), tempEmail: { userId: req.user?.id } },
       orderBy: { receivedAt: 'desc' },
-      take: 50 // Optimization: Only fetch the latest 50 messages
+      take: 50,
+      select: {
+        id: true,
+        sender: true,
+        subject: true,
+        receivedAt: true,
+        otpCode: true,
+        // ⚡ Optimization: Only send a small snippet for the list view
+        body: true 
+      }
     });
-    res.json(messages);
+
+    // Manually truncate bodies in-memory to save bandwidth while keeping the 'body' property for logic
+    const optimizedMessages = messages.map(m => ({
+      ...m,
+      body: m.body.substring(0, 200) + (m.body.length > 200 ? '...' : '')
+    }));
+
+    res.json(optimizedMessages);
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+export const getMessageDetail = async (req: AuthRequest, res: Response) => {
+  try {
+    const id = parseInt(req.params.id as string);
+    const message = await prisma.message.findFirst({
+      where: { id, tempEmail: { userId: req.user?.id } }
+    });
+
+    if (!message) return res.status(404).json({ error: 'Message not found' });
+    res.json(message);
   } catch (error) {
     res.status(500).json({ error: 'Server error' });
   }

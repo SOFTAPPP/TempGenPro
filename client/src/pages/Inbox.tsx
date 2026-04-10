@@ -109,7 +109,7 @@ const Inbox: React.FC = () => {
     return () => { document.body.style.overflow = 'unset'; };
   }, [confirmState.show]);
 
-  const fetchEmails = async () => {
+  const fetchEmails = React.useCallback(async () => {
     try {
       const res = await api.get('/emails');
       setEmails(res.data);
@@ -123,9 +123,9 @@ const Inbox: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedEmail]);
 
-  const fetchMessages = async (emailId: number, silent = false) => {
+  const fetchMessages = React.useCallback(async (emailId: number, silent = false) => {
     if (!silent) setMsgLoading(true);
     try {
       const res = await api.get(`/emails/${emailId}/messages`);
@@ -135,13 +135,24 @@ const Inbox: React.FC = () => {
     } finally {
       if (!silent) setMsgLoading(false);
     }
-  };
+  }, []);
+
+  const fetchMessageDetail = React.useCallback(async (msgId: number) => {
+    try {
+      const res = await api.get(`/emails/messages/${msgId}/detail`);
+      setSelectedMessage(res.data);
+      // Also update the message in the list so it's cached
+      setMessages(prev => prev.map(m => m.id === msgId ? res.data : m));
+    } catch (err) {
+      console.error('Error fetching message detail');
+    }
+  }, []);
 
   useEffect(() => {
     fetchEmails();
     const timer = setInterval(() => setCurrentTime(new Date()), 1000 * 60);
     return () => clearInterval(timer);
-  }, []);
+  }, [fetchEmails]);
 
   // ⚡ Global Socket Connection
   useEffect(() => {
@@ -175,9 +186,7 @@ const Inbox: React.FC = () => {
     if (selectedEmail) {
       fetchMessages(selectedEmail.id);
       setSelectedMessage(null); // Reset detail view when switching relay
-      if (window.innerWidth <= 900) {
-        setShowMobileMessages(true);
-      }
+      setShowMobileMessages(true);
       socketService.joinInbox(selectedEmail.email);
       socketService.onNewEmail((newMessage: Message) => {
         setMessages(prev => {
@@ -200,11 +209,10 @@ const Inbox: React.FC = () => {
     return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
   };
 
-  const generateNew = async () => {
+  const generateNew = React.useCallback(async () => {
     setIsGenerating(true);
     try {
       const res = await api.post('/emails/generate');
-      // Ensure data integrity to prevent render crashes
       const newNode = {
         ...res.data,
         _count: res.data._count || { messages: 0 }
@@ -221,9 +229,9 @@ const Inbox: React.FC = () => {
     } finally {
       setIsGenerating(false);
     }
-  };
+  }, [showNotification]);
 
-  const deleteEmail = (id: number) => {
+  const deleteEmail = React.useCallback((id: number) => {
     setConfirmState({
       show: true,
       title: 'DISCONNECT RELAY',
@@ -232,9 +240,9 @@ const Inbox: React.FC = () => {
       onConfirm: async () => {
         try {
           await api.delete(`/emails/${id}`);
-          setEmails(emails.filter(e => e.id !== id));
+          setEmails(prev => prev.filter(e => e.id !== id));
           if (selectedEmail?.id === id) {
-            setSelectedEmail(emails.find(e => e.id !== id) || null);
+            setSelectedEmail(null);
             setShowMobileMessages(false);
           }
           setConfirmState(prev => ({ ...prev, show: false }));
@@ -244,7 +252,7 @@ const Inbox: React.FC = () => {
         }
       }
     });
-  };
+  }, [selectedEmail, showNotification]);
 
   const handleDeleteMessage = (id: number) => {
     setConfirmState({
@@ -272,8 +280,31 @@ const Inbox: React.FC = () => {
     setTimeout(() => setShowCopyToast(false), 2000);
   };
 
+  const renderMessageBody = (text: string) => {
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const parts = text.split(urlRegex);
+
+    return parts.map((part, index) => {
+      if (part.match(urlRegex)) {
+        return (
+          <a
+            key={index}
+            href={part}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: 'var(--primary)', textDecoration: 'underline', wordBreak: 'break-all' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {part}
+          </a>
+        );
+      }
+      return part;
+    });
+  };
+
   return (
-    <div className="container" style={{ padding: '8rem 1.5rem 2rem' }}>
+    <div className="inbox-container">
       <ConfirmationModal
         show={confirmState.show}
         onClose={() => setConfirmState(prev => ({ ...prev, show: false }))}
@@ -296,10 +327,10 @@ const Inbox: React.FC = () => {
         )}
       </AnimatePresence>
 
-      <div className="inbox-layout" style={{ height: 'calc(100vh - 180px)', minHeight: '650px', background: 'rgba(255,255,255,0.01)', borderRadius: '24px', border: '1px solid var(--border)', overflow: 'hidden', display: 'flex' }}>
+      <div className="inbox-layout">
 
         {/* Sidebar: Private Relay Nodes */}
-        <aside className={`glass-sidebar ${showMobileMessages ? 'mobile-hidden' : ''}`} style={{ width: '300px', borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column' }}>
+        <aside className={`glass-sidebar ${showMobileMessages ? 'mobile-hidden' : ''}`}>
           <div className="sidebar-header" style={{ padding: '1.5rem', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.02)' }}>
             <div>
               <h3 style={{ fontSize: '0.9rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-bold)' }}>Relay Nodes</h3>
@@ -363,7 +394,7 @@ const Inbox: React.FC = () => {
         </aside>
 
         {/* Main Console: Gmail System */}
-        <main className={`glass-main ${!showMobileMessages ? 'mobile-hidden' : ''}`} style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden', background: 'rgba(0,0,0,0.2)' }}>
+        <main className={`glass-main ${!showMobileMessages ? 'mobile-hidden' : ''}`}>
           <AnimatePresence mode="wait">
             {!selectedEmail ? (
               <motion.div
@@ -439,8 +470,8 @@ const Inbox: React.FC = () => {
                       </div>
                     )}
 
-                    <div style={{ fontSize: '1.15rem', lineHeight: 1.9, color: 'var(--text)', whiteSpace: 'pre-wrap', padding: '2.5rem', borderRadius: '20px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-light)' }}>
-                      {selectedMessage.body}
+                    <div style={{ fontSize: '1.15rem', lineHeight: 1.9, color: 'var(--text)', whiteSpace: 'pre-wrap', padding: '2.5rem', borderRadius: '20px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-light)', overflowWrap: 'break-word', wordBreak: 'break-all' }}>
+                      {renderMessageBody(selectedMessage.body)}
                     </div>
                   </div>
                 </div>
@@ -456,7 +487,14 @@ const Inbox: React.FC = () => {
               >
                 <div style={{ padding: '1.5rem 2.5rem', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.01)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <div style={{ padding: '0.5rem', borderRadius: '12px', background: 'var(--primary-glow)', color: 'var(--primary)' }}>
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); setShowMobileMessages(false); }} 
+                      className="btn btn-secondary btn-sm mobile-visible" 
+                      style={{ padding: '0.6rem', borderRadius: '12px' }}
+                    >
+                      <ChevronLeft size={18} />
+                    </button>
+                    <div className="mobile-hidden" style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'var(--primary-glow)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <Mail size={20} />
                     </div>
                     <div>
@@ -486,7 +524,10 @@ const Inbox: React.FC = () => {
                       {messages.map(msg => (
                         <div
                           key={msg.id}
-                          onClick={() => setSelectedMessage(msg)}
+                          onClick={() => {
+                            setSelectedMessage(msg);
+                            fetchMessageDetail(msg.id);
+                          }}
                           className="gmail-row"
                           style={{
                             display: 'flex',

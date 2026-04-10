@@ -46,29 +46,37 @@ export const login = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Username/Email and password are required' });
     }
 
+    const cleanIdentifier = identifier.trim().toLowerCase();
+    const cleanPassword = password.trim();
+
     const user = await prisma.user.findFirst({
       where: {
         OR: [
-          { username: identifier },
-          { email: identifier }
+          { username: { equals: cleanIdentifier, mode: 'insensitive' } },
+          { email: { equals: cleanIdentifier, mode: 'insensitive' } }
         ]
       }
     });
 
-    if (!user) return res.status(400).json({ error: 'User not found' });
+    if (!user) {
+      return res.status(400).json({ error: 'User not found' });
+    }
 
     if ((user as any).isBanned) {
       return res.status(403).json({ error: 'Your account has been suspended for violating our terms and conditions.' });
     }
 
-    const validPassword = await bcrypt.compare(password, user.password);
-    if (!validPassword) return res.status(400).json({ error: 'Invalid password' });
-
+    const validPassword = await bcrypt.compare(cleanPassword, user.password);
+    
+    if (!validPassword) {
+      return res.status(400).json({ error: 'Invalid password' });
+    }
 
     const token = jwt.sign({ id: user.id, username: user.username, role: user.role }, process.env.JWT_SECRET || 'secret');
 
     res.json({ token, user: { id: user.id, username: user.username, email: user.email, role: user.role } });
   } catch (error) {
+    console.error('[Login] Server Error:', error);
     res.status(500).json({ error: 'Server error' });
   }
 };

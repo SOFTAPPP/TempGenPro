@@ -107,6 +107,9 @@ const AdminDashboard: React.FC = () => {
   const [resettingPassword, setResettingPassword] = useState<number | null>(null);
   const [newPassword, setNewPassword] = useState('');
   const [showNewPassword, setShowNewPassword] = useState(false);
+  const [processingBan, setProcessingBan] = useState<number | null>(null);
+  const [processingUpdate, setProcessingUpdate] = useState<number | null>(null);
+  const [processingReset, setProcessingReset] = useState<number | null>(null);
 
   // Custom Confirmation Modal State
   const [confirmState, setConfirmState] = useState<{
@@ -180,12 +183,15 @@ const AdminDashboard: React.FC = () => {
   };
 
   const handleToggleBan = async (id: number, currentStatus: boolean) => {
+    setProcessingBan(id);
     try {
       await api.post(`/admin/users/${id}/ban`);
       setUsersData(usersData.map(u => u.id === id ? { ...u, isBanned: !currentStatus } : u));
       showNotification(currentStatus ? 'User Status: RESTORED' : 'User Status: SUSPENDED', currentStatus ? 'success' : 'info');
     } catch (err: any) {
       showNotification(err.response?.data?.error || 'Failed to toggle ban status.', 'error');
+    } finally {
+      setProcessingBan(null);
     }
   };
 
@@ -228,6 +234,7 @@ const AdminDashboard: React.FC = () => {
   };
 
   const handleUpdateUser = async (id: number) => {
+    setProcessingUpdate(id);
     try {
       const res = await api.patch(`/admin/users/${id}`, editForm);
       setUsersData(usersData.map(u => u.id === id ? { ...u, ...res.data } : u));
@@ -235,11 +242,14 @@ const AdminDashboard: React.FC = () => {
       showNotification('User Profile Synchronized.');
     } catch (err) {
       showNotification('Failed to update user.', 'error');
+    } finally {
+      setProcessingUpdate(null);
     }
   };
 
   const handleResetPassword = async (id: number) => {
     if (!newPassword) return showNotification('New Access Key required.', 'error');
+    setProcessingReset(id);
     try {
       await api.put(`/admin/users/${id}/password`, { newPassword });
       setResettingPassword(null);
@@ -247,6 +257,8 @@ const AdminDashboard: React.FC = () => {
       showNotification('User Password Overridden.');
     } catch (err) {
       showNotification('Failed to reset password.', 'error');
+    } finally {
+      setProcessingReset(null);
     }
   };
 
@@ -399,14 +411,21 @@ const AdminDashboard: React.FC = () => {
                                 <button
                                   onClick={() => handleToggleBan(u.id, u.isBanned)}
                                   className="btn btn-sm"
+                                  disabled={processingBan === u.id}
                                   style={{
                                     gap: '0.5rem',
                                     background: u.isBanned ? '#10b981' : '#ef4444',
                                     color: 'white',
-                                    border: 'none'
+                                    border: 'none',
+                                    minWidth: '160px'
                                   }}
                                 >
-                                  <AlertTriangle size={16} /> {u.isBanned ? 'Restore Account' : 'Suspend Account'}
+                                  {processingBan === u.id ? (
+                                    <RefreshCw size={16} className="animate-spin" />
+                                  ) : (
+                                    <AlertTriangle size={16} />
+                                  )}
+                                  {u.isBanned ? 'Restore Account' : 'Suspend Account'}
                                 </button>
                                 <button onClick={() => startEditing(u)} className="btn btn-secondary btn-sm" style={{ gap: '0.5rem' }}>
                                   <Edit2 size={16} /> Edit Profile
@@ -438,8 +457,9 @@ const AdminDashboard: React.FC = () => {
                                       <input type="text" className="input-field" value={editForm.email} onChange={e => setEditForm({ ...editForm, email: e.target.value })} style={{ height: '45px' }} />
                                     </div>
                                   </div>
-                                  <button onClick={() => handleUpdateUser(u.id)} className="btn btn-primary btn-sm" style={{ width: '100%', gap: '0.5rem' }}>
-                                    <Save size={16} /> Commit Changes
+                                  <button onClick={() => handleUpdateUser(u.id)} className="btn btn-primary btn-sm" disabled={processingUpdate === u.id} style={{ width: '100%', gap: '0.5rem' }}>
+                                    {processingUpdate === u.id ? <RefreshCw size={16} className="animate-spin" /> : <Save size={16} />}
+                                    Commit Changes
                                   </button>
                                 </motion.div>
                               )}
@@ -482,8 +502,9 @@ const AdminDashboard: React.FC = () => {
                                       </button>
                                     </div>
                                   </div>
-                                  <button onClick={() => handleResetPassword(u.id)} className="btn btn-sm" style={{ width: '100%', background: '#f59e0b', color: 'white', gap: '0.5rem' }}>
-                                    <Key size={16} /> Override Password
+                                  <button onClick={() => handleResetPassword(u.id)} className="btn btn-sm" disabled={processingReset === u.id} style={{ width: '100%', background: '#f59e0b', color: 'white', gap: '0.5rem' }}>
+                                    {processingReset === u.id ? <RefreshCw size={16} className="animate-spin" /> : <Key size={16} />}
+                                    Override Password
                                   </button>
                                 </motion.div>
                               )}

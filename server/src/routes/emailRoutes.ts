@@ -5,7 +5,8 @@ import {
   deleteEmail,
   getEmailMessages,
   generateSimulationOTP,
-  deleteMessage
+  deleteMessage,
+  getMessageDetail
 } from '../controllers/emailController.js';
 import { authenticateToken } from '../middlewares/auth.js';
 
@@ -17,6 +18,7 @@ router.get('/', getUserEmails as any);
 router.post('/generate', createEmail as any);
 router.delete('/:id', deleteEmail as any);
 router.delete('/messages/:id', deleteMessage as any);
+router.get('/messages/:id/detail', getMessageDetail as any);
 router.get('/:id/messages', getEmailMessages as any);
 router.post('/:id/otp', generateSimulationOTP as any);
 

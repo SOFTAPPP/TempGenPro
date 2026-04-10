@@ -206,19 +206,24 @@ main {
   top: 0;
   left: 0;
   right: 0;
-  height: 80px;
+  height: 90px;
   display: flex;
   align-items: center;
   z-index: 1000;
-  transition: var(--transition);
+  background: rgba(16, 17, 21, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .nav.scrolled {
-  background: rgba(16, 17, 21, 0.8);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  height: 70px;
+  background: rgba(10, 11, 14, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  height: 75px;
   border-bottom: 1px solid var(--border);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
 }
 
 .logo-text {
@@ -693,10 +698,9 @@ main {
   background: var(--text-muted);
 }
 
-/* Footer */
 .footer {
   background: var(--bg);
-  padding: 6rem 0 4rem;
+  padding: 4rem 0 3rem;
   border-top: 1px solid var(--border);
 }
 
@@ -706,7 +710,7 @@ main {
   grid-template-columns: 350px 1fr !important;
   gap: 2rem !important;
   height: calc(100vh - 160px) !important;
-  margin-top: 2rem;
+  margin-top: 1rem;
 }
 
 .glass-sidebar {
@@ -772,8 +776,42 @@ main {
 
 @media (max-width: 900px) {
   .inbox-layout {
-    grid-template-columns: 1fr !important;
-    height: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    height: calc(100vh - 70px) !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    min-height: 0 !important;
+    gap: 0 !important;
+    border-radius: 0 !important;
+    border: none !important;
+    position: fixed !important;
+    top: 70px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 100;
+  }
+
+  .glass-sidebar, .glass-main {
+    width: 100% !important;
+    height: 100% !important;
+    border: none !important;
+    border-radius: 0 !important;
+    position: absolute !important;
+    top: 0;
+    left: 0;
+  }
+}
+
+.inbox-container {
+  padding: 5.5rem 1.5rem 2rem;
+}
+
+@media (max-width: 900px) {
+  .inbox-container {
+    padding: 0 !important;
+    max-width: none !important;
   }
 }
 
@@ -900,4 +938,7 @@ main {
   .mobile-hidden {
     display: flex !important;
   }
-}
+  .mobile-visible {
+    display: none !important;
+  }
+}@media (max-width: 900px) { .mobile-visible { display: flex !important; } }
