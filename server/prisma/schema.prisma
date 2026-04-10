@@ -1,0 +1,71 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
+  id         Int         @id @default(autoincrement())
+  username   String      @unique
+  email      String      @unique
+  password   String
+  role       Role        @default(USER)
+  isBanned   Boolean     @default(false)
+  createdAt  DateTime    @default(now())
+  tempEmails TempEmail[]
+}
+
+model TempEmail {
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  createdAt DateTime  @default(now())
+  expiresAt DateTime
+  isActive  Boolean   @default(true)
+  userId    Int?
+  user      User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages  Message[]
+  otps      OTP[]
+
+  @@index([userId, isActive])
+  @@index([email])
+}
+
+model Message {
+  id          Int       @id @default(autoincrement())
+  tempEmailId Int
+  tempEmail   TempEmail @relation(fields: [tempEmailId], references: [id], onDelete: Cascade)
+  sender      String
+  subject     String
+  body        String    @db.Text
+  otpCode     String?
+  receivedAt  DateTime  @default(now())
+
+  @@index([tempEmailId, receivedAt])
+}
+
+model OTP {
+  id          Int       @id @default(autoincrement())
+  tempEmailId Int
+  tempEmail   TempEmail @relation(fields: [tempEmailId], references: [id], onDelete: Cascade)
+  code        String
+  createdAt   DateTime  @default(now())
+  isUsed      Boolean   @default(false)
+}
+
+model VisitorLog {
+  id        Int      @id @default(autoincrement())
+  ip        String
+  userAgent String?
+  path      String?
+  timestamp DateTime @default(now())
+}
+

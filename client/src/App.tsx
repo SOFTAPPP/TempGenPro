@@ -1,0 +1,84 @@
+import React, { lazy, Suspense } from 'react';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
+import { AuthProvider } from './context/AuthContext';
+import { Loader2 } from 'lucide-react';
+import Navbar from './components/Navbar';
+import Footer from './components/Footer';
+import ScrollToTop from './components/ScrollToTop';
+import './index.css';
+
+// Code Splitting for performance
+const Home = lazy(() => import('./pages/Home'));
+const Inbox = lazy(() => import('./pages/Inbox'));
+const Login = lazy(() => import('./pages/Login'));
+const Signup = lazy(() => import('./pages/Signup'));
+const Features = lazy(() => import('./pages/Features'));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const Profile = lazy(() => import('./pages/Profile'));
+const Privacy = lazy(() => import('./pages/Privacy'));
+const Terms = lazy(() => import('./pages/Terms'));
+
+const LoadingFallback = () => (
+  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', width: '100%', background: 'var(--bg)' }}>
+    <Loader2 className="animate-spin" size={48} color="var(--primary)" />
+  </div>
+);
+
+const AnimatedRoutes = () => {
+  const location = useLocation();
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <AnimatePresence mode="wait">
+        <Routes location={location} key={location.pathname}>
+          <Route path="/" element={<PageWrapper><Home /></PageWrapper>} />
+          <Route path="/inbox" element={<PageWrapper><Inbox /></PageWrapper>} />
+          <Route path="/login" element={<PageWrapper><Login /></PageWrapper>} />
+          <Route path="/signup" element={<PageWrapper><Signup /></PageWrapper>} />
+          <Route path="/features" element={<PageWrapper><Features /></PageWrapper>} />
+          <Route path="/admin" element={<PageWrapper><AdminDashboard /></PageWrapper>} />
+          <Route path="/profile" element={<PageWrapper><Profile /></PageWrapper>} />
+          <Route path="/privacy" element={<PageWrapper><Privacy /></PageWrapper>} />
+          <Route path="/terms" element={<PageWrapper><Terms /></PageWrapper>} />
+        </Routes>
+      </AnimatePresence>
+    </Suspense>
+  );
+};
+
+const PageWrapper = ({ children }: { children: React.ReactNode }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 10 }}
+    animate={{ opacity: 1, y: 0 }}
+    exit={{ opacity: 0, y: -10 }}
+    transition={{ duration: 0.3 }}
+  >
+    {children}
+  </motion.div>
+);
+
+import { NotificationProvider } from './context/NotificationContext';
+import './index.css';
+
+// ... (previous imports)
+
+const App: React.FC = () => {
+  return (
+    <Router>
+      <ScrollToTop />
+      <NotificationProvider>
+        <AuthProvider>
+          <div className="app-container">
+            <Navbar />
+            <main>
+              <AnimatedRoutes />
+            </main>
+            <Footer />
+          </div>
+        </AuthProvider>
+      </NotificationProvider>
+    </Router>
+  );
+};
+
+export default App;
