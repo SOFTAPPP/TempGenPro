@@ -69,6 +69,8 @@ const ConfirmationModal: React.FC<{
   </AnimatePresence>
 );
 
+const MAX_EMAILS = 5;
+
 const Inbox: React.FC = () => {
   const { user } = useAuth();
   const { showNotification } = useNotification();
@@ -295,7 +297,7 @@ const Inbox: React.FC = () => {
       </AnimatePresence>
 
       <div className="inbox-layout" style={{ height: 'calc(100vh - 180px)', minHeight: '650px', background: 'rgba(255,255,255,0.01)', borderRadius: '24px', border: '1px solid var(--border)', overflow: 'hidden', display: 'flex' }}>
-        
+
         {/* Sidebar: Private Relay Nodes */}
         <aside className={`glass-sidebar ${showMobileMessages ? 'mobile-hidden' : ''}`} style={{ width: '300px', borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column' }}>
           <div className="sidebar-header" style={{ padding: '1.5rem', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.02)' }}>
@@ -306,9 +308,19 @@ const Inbox: React.FC = () => {
                 <span style={{ fontSize: '0.6rem', fontWeight: 900, color: 'var(--text-muted)' }}>{socketStatus === 'connected' ? 'SECURE' : 'OFFLINE'}</span>
               </div>
             </div>
-            <button className="btn btn-primary btn-nav-round" onClick={generateNew} disabled={isGenerating} style={{ width: '38px', height: '38px', borderRadius: '50%' }}>
-              {isGenerating ? <RefreshCw size={16} className="animate-spin" /> : <Plus size={20} />}
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              {(user as any)?.role !== 'ADMIN' && (
+                <div className="limit-badge">
+                  <Mail size={12} />
+                  <span>{emails.length}/{MAX_EMAILS}</span>
+                </div>
+              )}
+              {((user as any)?.role === 'ADMIN' || emails.length < MAX_EMAILS) && (
+                <button className="btn btn-primary btn-nav-round" onClick={generateNew} disabled={isGenerating} style={{ width: '38px', height: '38px', borderRadius: '50%' }}>
+                  {isGenerating ? <RefreshCw size={16} className="animate-spin" /> : <Plus size={20} />}
+                </button>
+              )}
+            </div>
           </div>
           <div className="sidebar-content" style={{ padding: '1rem', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column' }}>
             {loading ? (
@@ -328,10 +340,10 @@ const Inbox: React.FC = () => {
               </div>
             ) : (
               emails.map(email => (
-                <motion.div 
+                <motion.div
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
-                  key={email.id} 
+                  key={email.id}
                   onClick={() => setSelectedEmail(email)}
                   className={`email-item ${selectedEmail?.id === email.id ? 'active' : ''}`}
                   style={{ padding: '1.2rem', borderRadius: '16px', marginBottom: '0.75rem', cursor: 'pointer', position: 'relative', border: '1px solid transparent', transition: 'all 0.3s ease', background: selectedEmail?.id === email.id ? 'rgba(182, 139, 245, 0.08)' : 'rgba(255,255,255,0.01)' }}
@@ -354,11 +366,11 @@ const Inbox: React.FC = () => {
         <main className={`glass-main ${!showMobileMessages ? 'mobile-hidden' : ''}`} style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden', background: 'rgba(0,0,0,0.2)' }}>
           <AnimatePresence mode="wait">
             {!selectedEmail ? (
-              <motion.div 
-                key="none" 
-                initial={{ opacity: 0, scale: 0.98 }} 
-                animate={{ opacity: 1, scale: 1 }} 
-                exit={{ opacity: 0, scale: 1.02 }} 
+              <motion.div
+                key="none"
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 1.02 }}
                 style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', textAlign: 'center', padding: '2rem' }}
               >
                 <div style={{ position: 'relative', marginBottom: '3rem' }}>
@@ -369,21 +381,21 @@ const Inbox: React.FC = () => {
                 </div>
                 <h2 style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--text-bold)', marginBottom: '1rem', letterSpacing: '-0.02em' }}>Initialize Interception</h2>
                 <p style={{ fontSize: '1rem', color: 'var(--text-muted)', maxWidth: '400px', lineHeight: 1.6 }}>Connect to a secure relay node from the terminal panel on the left to monitor decentralized data transmissions.</p>
-                
+
                 <div style={{ marginTop: '3rem', display: 'flex', gap: '2rem', opacity: 0.4 }}>
-                    <div style={{ textAlign: 'center' }}><div style={{ fontSize: '1.2rem', fontWeight: 900, color: 'var(--text-bold)' }}>256-bit</div><p style={{ fontSize: '0.65rem', textTransform: 'uppercase', fontWeight: 800 }}>Encryption</p></div>
-                    <div style={{ height: '30px', width: '1px', background: 'var(--border)' }}></div>
-                    <div style={{ textAlign: 'center' }}><div style={{ fontSize: '1.2rem', fontWeight: 900, color: 'var(--text-bold)' }}>Zero</div><p style={{ fontSize: '0.65rem', textTransform: 'uppercase', fontWeight: 800 }}>Log Policy</p></div>
-                    <div style={{ height: '30px', width: '1px', background: 'var(--border)' }}></div>
-                    <div style={{ textAlign: 'center' }}><div style={{ fontSize: '1.2rem', fontWeight: 900, color: 'var(--text-bold)' }}>Instant</div><p style={{ fontSize: '0.65rem', textTransform: 'uppercase', fontWeight: 800 }}>Shredding</p></div>
+                  <div style={{ textAlign: 'center' }}><div style={{ fontSize: '1.2rem', fontWeight: 900, color: 'var(--text-bold)' }}>256-bit</div><p style={{ fontSize: '0.65rem', textTransform: 'uppercase', fontWeight: 800 }}>Encryption</p></div>
+                  <div style={{ height: '30px', width: '1px', background: 'var(--border)' }}></div>
+                  <div style={{ textAlign: 'center' }}><div style={{ fontSize: '1.2rem', fontWeight: 900, color: 'var(--text-bold)' }}>Zero</div><p style={{ fontSize: '0.65rem', textTransform: 'uppercase', fontWeight: 800 }}>Log Policy</p></div>
+                  <div style={{ height: '30px', width: '1px', background: 'var(--border)' }}></div>
+                  <div style={{ textAlign: 'center' }}><div style={{ fontSize: '1.2rem', fontWeight: 900, color: 'var(--text-bold)' }}>Instant</div><p style={{ fontSize: '0.65rem', textTransform: 'uppercase', fontWeight: 800 }}>Shredding</p></div>
                 </div>
               </motion.div>
             ) : selectedMessage ? (
               /* --- PACKET READER (DETAIL VIEW) --- */
-              <motion.div 
-                key="detail" 
-                initial={{ opacity: 0, x: 30 }} 
-                animate={{ opacity: 1, x: 0 }} 
+              <motion.div
+                key="detail"
+                initial={{ opacity: 0, x: 30 }}
+                animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -30 }}
                 style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', background: 'var(--bg)' }}
               >
@@ -396,11 +408,11 @@ const Inbox: React.FC = () => {
                     <Trash2 size={16} />
                   </button>
                 </div>
-                
+
                 <div style={{ flex: 1, overflowY: 'auto', padding: '4rem 2rem' }}>
                   <div style={{ maxWidth: '850px', margin: '0 auto' }}>
                     <h1 style={{ fontSize: '2.5rem', fontWeight: 900, marginBottom: '2.5rem', lineHeight: 1.1, color: 'var(--text-bold)' }}>{selectedMessage.subject}</h1>
-                    
+
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4rem', paddingBottom: '2rem', borderBottom: '1px solid var(--border-light)' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
                         <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'var(--primary)', color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '1.2rem' }}>
@@ -418,11 +430,11 @@ const Inbox: React.FC = () => {
                     </div>
 
                     {selectedMessage.otpCode && (
-                       <div className="glass-card" style={{ padding: '2.5rem', borderRadius: '24px', border: '2px solid var(--primary)', marginBottom: '4rem', textAlign: 'center', background: 'rgba(182, 139, 245, 0.03)' }}>
+                      <div className="glass-card" style={{ padding: '2.5rem', borderRadius: '24px', border: '2px solid var(--primary)', marginBottom: '4rem', textAlign: 'center', background: 'rgba(182, 139, 245, 0.03)' }}>
                         <p style={{ fontSize: '0.75rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.3em', marginBottom: '1.5rem', color: 'var(--primary)' }}>SECURITY VERIFICATION CODE</p>
                         <div style={{ fontSize: '4rem', fontWeight: 900, letterSpacing: '0.4em', fontFamily: 'monospace', color: 'var(--text-bold)', textShadow: '0 0 20px var(--primary-glow)' }}>{selectedMessage.otpCode}</div>
                         <button onClick={() => copyToClipboard(selectedMessage.otpCode || '')} className="btn btn-primary" style={{ marginTop: '2rem', padding: '1rem 3rem', borderRadius: '14px' }}>
-                            <Copy size={20} /> COPY CODE
+                          <Copy size={20} /> COPY CODE
                         </button>
                       </div>
                     )}
@@ -435,10 +447,10 @@ const Inbox: React.FC = () => {
               </motion.div>
             ) : (
               /* --- PACKET LIST (GMAIL VIEW) --- */
-              <motion.div 
-                key="list" 
-                initial={{ opacity: 0 }} 
-                animate={{ opacity: 1 }} 
+              <motion.div
+                key="list"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%' }}
               >
@@ -448,13 +460,13 @@ const Inbox: React.FC = () => {
                       <Mail size={20} />
                     </div>
                     <div>
-                        <h2 style={{ fontSize: '1.1rem', fontWeight: 900, margin: 0 }}>{selectedEmail.email}</h2>
-                        <span style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Active Tunnel Pipeline</span>
+                      <h2 style={{ fontSize: '1.1rem', fontWeight: 900, margin: 0 }}>{selectedEmail.email}</h2>
+                      <span style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Active Tunnel Pipeline</span>
                     </div>
                   </div>
                   <div style={{ display: 'flex', gap: '0.75rem' }}>
-                    <button onClick={() => copyToClipboard(selectedEmail.email)} className="btn btn-nav-round" title="Copy Address"><Copy size={16} /></button>
-                    <button onClick={() => fetchMessages(selectedEmail.id)} className="btn btn-nav-round" title="Refresh List"><RefreshCw size={16} className={msgLoading ? 'animate-spin' : ''} /></button>
+                    <button onClick={() => copyToClipboard(selectedEmail.email)} className="btn btn-nav-round btn-copy" title="Copy Address"><Copy size={16} /></button>
+                    <button onClick={() => fetchMessages(selectedEmail.id)} className="btn btn-nav-round btn-refresh" title="Refresh List"><RefreshCw size={16} className={msgLoading ? 'animate-spin' : ''} /></button>
                   </div>
                 </div>
 
@@ -472,14 +484,14 @@ const Inbox: React.FC = () => {
                   ) : (
                     <div className="gmail-list">
                       {messages.map(msg => (
-                        <div 
-                          key={msg.id} 
+                        <div
+                          key={msg.id}
                           onClick={() => setSelectedMessage(msg)}
                           className="gmail-row"
-                          style={{ 
-                            display: 'flex', 
-                            padding: '1.25rem 2.5rem', 
-                            borderBottom: '1px solid var(--border-light)', 
+                          style={{
+                            display: 'flex',
+                            padding: '1.25rem 2.5rem',
+                            borderBottom: '1px solid var(--border-light)',
                             cursor: 'pointer',
                             alignItems: 'center',
                             transition: 'all 0.2s ease',

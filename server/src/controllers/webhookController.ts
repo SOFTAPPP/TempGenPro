@@ -17,10 +17,10 @@ export const receiveEmail = async (req: Request, res: Response) => {
     }
 
     const { to, from, subject, raw, text, html } = req.body;
-    
+
     let finalBody = text || html || '';
     let emailSubject = subject || '(No Subject)';
-    
+
     // 🚀 Robust parsing of raw emails
     if (raw) {
       console.time('[Webhook] 📧 Parsing Time');

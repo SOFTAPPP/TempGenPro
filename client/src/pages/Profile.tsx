@@ -56,10 +56,10 @@ const Profile: React.FC = () => {
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2.5rem', maxWidth: '1200px', margin: '0 auto' }}>
         {/* Profile Card */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="glass-card" 
+          className="glass-card"
           style={{ padding: '3rem', position: 'relative', overflow: 'hidden' }}
         >
           <div style={{ position: 'absolute', top: 0, right: 0, padding: '2rem', opacity: 0.1 }}>
@@ -103,10 +103,10 @@ const Profile: React.FC = () => {
 
         {/* Stats & Actions */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="glass-card" 
+            className="glass-card"
             style={{ padding: '2.5rem' }}
           >
             <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '2rem' }}>Utility Performance</h2>
@@ -124,11 +124,11 @@ const Profile: React.FC = () => {
             </div>
           </motion.div>
 
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.1 }}
-            className="glass-card" 
+            className="glass-card"
             style={{ padding: '2.5rem' }}
           >
             <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '2rem' }}>Security Protocol</h2>
@@ -136,12 +136,12 @@ const Profile: React.FC = () => {
               <button className="btn btn-secondary" style={{ width: '100%', justifyContent: 'flex-start' }}>
                 <Key size={18} /> Cycle Access Key (Password)
               </button>
-              <button 
+              <button
                 onClick={() => {
                   logout();
                   window.location.href = '/login';
                 }}
-                className="btn btn-outline" 
+                className="btn btn-outline"
                 style={{ width: '100%', justifyContent: 'flex-start', color: '#ef4444', borderColor: 'rgba(239, 68, 68, 0.2)' }}
               >
                 <Shield size={18} /> Terminate Current Session

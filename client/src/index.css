@@ -22,8 +22,13 @@
 
 /* Hyper-Smooth Spin Animation */
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .animate-spin {
@@ -35,13 +40,23 @@
 }
 
 /* Force GPU acceleration for smooth animations */
-body, .glass-card, .glass-main, .btn, .msg-card, .badge {
+body,
+.glass-card,
+.glass-main,
+.btn,
+.msg-card,
+.badge {
   transform: translateZ(0);
   backface-visibility: hidden;
   will-change: transform, opacity;
 }
 
-h1, h2, h3, h4, .logo-text, .hero-title {
+h1,
+h2,
+h3,
+h4,
+.logo-text,
+.hero-title {
   font-family: 'Outfit', sans-serif !important;
   color: var(--text-bold);
   letter-spacing: -0.02em;
@@ -58,7 +73,7 @@ h1, h2, h3, h4, .logo-text, .hero-title {
 
 body {
   background-color: var(--bg);
-  background-image: 
+  background-image:
     radial-gradient(circle at 0% 0%, rgba(182, 139, 245, 0.08) 0%, transparent 40%),
     radial-gradient(circle at 100% 100%, rgba(182, 139, 245, 0.08) 0%, transparent 40%);
   color: var(--text);
@@ -287,7 +302,8 @@ main {
 .btn {
   display: inline-flex;
   align-items: center;
-  justify-content: center; /* Ensure base centering */
+  justify-content: center;
+  /* Ensure base centering */
   gap: 0.75rem;
   padding: 0.8rem 1.8rem;
   border-radius: 12px;
@@ -323,6 +339,47 @@ main {
   background: rgba(255, 255, 255, 0.08);
   border-color: var(--primary);
   color: var(--primary);
+}
+
+.btn-copy {
+  background: rgba(182, 139, 245, 0.1) !important;
+  color: var(--primary) !important;
+  border: 1px solid rgba(182, 139, 245, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.btn-copy:hover {
+  background: var(--primary) !important;
+  color: #101115 !important;
+  box-shadow: 0 0 20px var(--primary-glow) !important;
+  transform: translateY(-2px) rotate(5deg);
+}
+
+.btn-refresh {
+  background: rgba(255, 255, 255, 0.03) !important;
+  color: var(--text-bold) !important;
+  border: 1px solid var(--border) !important;
+  transition: all 0.3s ease !important;
+}
+
+.btn-refresh:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: #10b981 !important;
+  color: #10b981 !important;
+  transform: translateY(-2px);
+}
+
+.limit-badge {
+  background: rgba(182, 139, 245, 0.1);
+  color: var(--primary);
+  padding: 4px 12px;
+  border-radius: 100px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  border: 1px solid rgba(182, 139, 245, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .btn.loading {
@@ -823,6 +880,7 @@ main {
     padding: 1.25rem 1rem;
   }
 }
+
 /* Gmail-Style Inbox UI */
 .gmail-row:hover {
   background: rgba(182, 139, 245, 0.05) !important;

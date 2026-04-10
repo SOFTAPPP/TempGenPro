@@ -1,14 +1,14 @@
 import express from 'express';
-import { 
-  getAllUserData, 
-  getStats, 
-  getVisitorLogs, 
-  deleteUser, 
-  updateUser, 
-  resetUserPassword, 
-  deleteTempEmail, 
-  toggleBanUser, 
-  deleteMessage 
+import {
+  getAllUserData,
+  getStats,
+  getVisitorLogs,
+  deleteUser,
+  updateUser,
+  resetUserPassword,
+  deleteTempEmail,
+  toggleBanUser,
+  deleteMessage
 } from '../controllers/adminController.js';
 import { authenticateToken, isAdmin } from '../middlewares/auth.js';
 

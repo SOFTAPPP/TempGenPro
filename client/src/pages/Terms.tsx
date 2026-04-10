@@ -12,7 +12,7 @@ const Terms: React.FC = () => {
         <h1 className="hero-title" style={{ fontSize: '3rem', marginBottom: '2rem' }}>
           Terms of <span className="gradient-text">Service</span>
         </h1>
-        
+
         <div className="card glass" style={{ padding: '3rem', lineHeight: '1.8' }}>
           <section style={{ marginBottom: '2.5rem' }}>
             <h3 style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1rem' }}>

@@ -29,8 +29,8 @@ app.use(visitorLogger);
 
 
 // Security and Performance Optimization
-app.use(helmet()); 
-app.use(compression()); 
+app.use(helmet());
+app.use(compression());
 app.use(cors());
 app.use(express.json({ limit: '5mb' })); // Increased limit to accommodate emails with HTML and small attachments
 
@@ -51,8 +51,8 @@ app.use('/api/webhook', webhookRoutes);
 app.use('/api/admin', adminRoutes);
 
 app.get('/health', (req, res) => {
-  res.json({ 
-    status: 'ok', 
+  res.json({
+    status: 'ok',
     uptime: process.uptime(),
     timestamp: new Date().toISOString()
   });
@@ -62,8 +62,8 @@ app.get('/health', (req, res) => {
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error(`[Error] ${err.message}`);
   res.status(err.status || 500).json({
-    error: process.env.NODE_ENV === 'production' 
-      ? 'An internal server error occurred' 
+    error: process.env.NODE_ENV === 'production'
+      ? 'An internal server error occurred'
       : err.message
   });
 });

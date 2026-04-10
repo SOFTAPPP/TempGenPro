@@ -19,7 +19,7 @@ export const authenticateToken = async (req: AuthRequest, res: Response, next: N
 
   try {
     const verified = jwt.verify(token, process.env.JWT_SECRET || 'secret') as { id: number; username: string; role: string };
-    
+
     // Check if user is banned
     const user = await prisma.user.findUnique({
       where: { id: verified.id },

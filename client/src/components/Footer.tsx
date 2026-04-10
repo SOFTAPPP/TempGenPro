@@ -10,7 +10,7 @@ const Footer: React.FC = () => {
         <div className="logo" style={{ justifyContent: 'center', marginBottom: '2.5rem' }}>
           <Logo iconSize={16} showText />
         </div>
-        
+
         <div className="footer-links" style={{ display: 'flex', justifyContent: 'center', gap: '3rem', marginBottom: '3rem', flexWrap: 'wrap' }}>
           <Link to="/privacy" className="nav-link">Privacy Policy</Link>
           <Link to="/terms" className="nav-link">Terms of Service</Link>
@@ -21,7 +21,7 @@ const Footer: React.FC = () => {
             <MessageSquare size={18} /> WhatsApp
           </a>
         </div>
-        
+
         <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
           © {new Date().getFullYear()} TempGenPro. All rights reserved. Keep your inbox safe.
         </p>

@@ -25,7 +25,7 @@ const Login: React.FC = () => {
       const res = await api.post('/auth/login', { identifier, password });
       login(res.data.user, res.data.token);
       showNotification(`System Access Granted. Welcome, ${res.data.user.username}.`);
-      
+
       // ⚡ GLOBAL REDIRECT: Admins land on Dashboard, Users on Inbox
       if (res.data.user.role === 'ADMIN') {
         navigate('/admin');
@@ -43,10 +43,10 @@ const Login: React.FC = () => {
 
   return (
     <div className="container" style={{ display: 'flex', justifyContent: 'center', padding: '6rem 1rem' }}>
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="card" 
+        className="card"
         style={{ width: '100%', maxWidth: '450px', padding: '3rem' }}
       >
         <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
@@ -58,15 +58,15 @@ const Login: React.FC = () => {
         </div>
 
         {error && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            style={{ 
-              background: 'rgba(239, 68, 68, 0.1)', 
-              color: '#ef4444', 
-              padding: '1rem', 
-              borderRadius: '12px', 
-              marginBottom: '1.5rem', 
+            style={{
+              background: 'rgba(239, 68, 68, 0.1)',
+              color: '#ef4444',
+              padding: '1rem',
+              borderRadius: '12px',
+              marginBottom: '1.5rem',
               fontSize: '0.9rem',
               border: '1px solid rgba(239, 68, 68, 0.2)',
               textAlign: 'center'
@@ -80,8 +80,8 @@ const Login: React.FC = () => {
           <div className="form-group">
             <label className="input-label">Username or Email</label>
             <div className="input-wrapper">
-              <input 
-                type="text" 
+              <input
+                type="text"
                 placeholder="Ex: cybernexus_99 or me@email.com"
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
@@ -95,8 +95,8 @@ const Login: React.FC = () => {
           <div className="form-group" style={{ marginBottom: '2.5rem' }}>
             <label className="input-label">Password</label>
             <div className="input-wrapper">
-              <input 
-                type={showPassword ? "text" : "password"} 
+              <input
+                type={showPassword ? "text" : "password"}
                 placeholder="Enter your secure password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -104,13 +104,13 @@ const Login: React.FC = () => {
                 style={{ paddingRight: '3.5rem' }}
               />
               <Lock size={18} className="input-icon" />
-              <button 
+              <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                style={{ 
-                  position: 'absolute', 
-                  right: '1rem', 
-                  top: '50%', 
+                style={{
+                  position: 'absolute',
+                  right: '1rem',
+                  top: '50%',
                   transform: 'translateY(-50%)',
                   background: 'none',
                   border: 'none',

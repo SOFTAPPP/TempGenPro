@@ -40,7 +40,7 @@ const Navbar: React.FC = () => {
         <div className="desktop-nav">
           <Link to="/" className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}>Home</Link>
           <Link to="/features" className={`nav-link ${location.pathname === '/features' ? 'active' : ''}`}>Features</Link>
-          
+
           {isAuthenticated ? (
             <div className="nav-actions">
               {user?.role === 'ADMIN' && (
@@ -67,8 +67,8 @@ const Navbar: React.FC = () => {
         </div>
 
         {/* Mobile Toggle */}
-        <button 
-          className="mobile-toggle" 
+        <button
+          className="mobile-toggle"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           aria-label="Toggle Menu"
         >
@@ -78,7 +78,7 @@ const Navbar: React.FC = () => {
 
       {/* Mobile Menu Overlay */}
       {mobileMenuOpen && (
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="mobile-menu"

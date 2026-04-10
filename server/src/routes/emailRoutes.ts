@@ -1,11 +1,11 @@
 import { Router } from 'express';
-import { 
-  getUserEmails, 
-  createEmail, 
-  deleteEmail, 
-  getEmailMessages, 
-  generateSimulationOTP, 
-  deleteMessage 
+import {
+  getUserEmails,
+  createEmail,
+  deleteEmail,
+  getEmailMessages,
+  generateSimulationOTP,
+  deleteMessage
 } from '../controllers/emailController.js';
 import { authenticateToken } from '../middlewares/auth.js';
 

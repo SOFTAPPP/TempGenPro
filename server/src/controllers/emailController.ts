@@ -28,8 +28,8 @@ export const createEmail = async (req: AuthRequest, res: Response) => {
       });
 
       if (activeCount >= 5) {
-        return res.status(403).json({ 
-          error: 'INVENTORY FULL: Free tier supports a maximum of 5 active relay nodes. Please disconnect an existing node to deploy a new one.' 
+        return res.status(403).json({
+          error: 'INVENTORY FULL: Free tier supports a maximum of 5 active relay nodes. Please disconnect an existing node to deploy a new one.'
         });
       }
     }
