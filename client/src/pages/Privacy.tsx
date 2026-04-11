@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Lock, EyeOff, Trash2, Database } from 'lucide-react';
+import { Lock, EyeOff, Trash2, Database, Globe } from 'lucide-react';
 
 const Privacy: React.FC = () => {
   return (
@@ -48,6 +48,15 @@ const Privacy: React.FC = () => {
             </h3>
             <p style={{ color: 'var(--text)' }}>
               We use minimal local storage and cookies only for essential functionality, such as keeping you logged in if you create an account. We do not use third-party tracking or advertising cookies.
+            </p>
+          </section>
+
+          <section style={{ marginBottom: '2.5rem' }}>
+            <h3 style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1rem' }}>
+              <Globe size={20} color="var(--primary)" /> 5. Virtual Numbers & Premium Domains
+            </h3>
+            <p style={{ color: 'var(--text)' }}>
+              Upon the release of our Virtual Number and Social-Ready Relay services, additional data specifically required by these providers for service activation may be handled. We maintain our core commitment to proxy and scrub all metadata to preserve your anonymity.
             </p>
           </section>
 

@@ -50,7 +50,16 @@ const Terms: React.FC = () => {
 
           <section style={{ marginBottom: '2.5rem' }}>
             <h3 style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1rem' }}>
-              <Shield size={20} color="var(--primary)" /> 4. Disclaimer of Warranty
+              <Shield size={20} color="var(--primary)" /> 4. Virtual Numbers & Premium Tunnels
+            </h3>
+            <p style={{ color: 'var(--text)' }}>
+              Usage of upcoming virtual numbers (WhatsApp/SMS) and premium social-ready domains is subject to additional fair-use policies. These services are intended for personal privacy and legitimate professional research. Any automated bulk-registration or commercial exploitation is strictly prohibited and will result in non-refundable termination.
+            </p>
+          </section>
+
+          <section style={{ marginBottom: '2.5rem' }}>
+            <h3 style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1rem' }}>
+              <AlertTriangle size={20} color="var(--primary)" /> 5. Disclaimer of Warranty
             </h3>
             <p style={{ color: 'var(--text)' }}>
               TempGenPro is provided "as is" and "as available". We make no warranties regarding the reliability, security, or performance of the email delivery service. Temporary data may be lost or deleted at any time.

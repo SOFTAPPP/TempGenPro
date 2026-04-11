@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Shield, Zap, Mail, Copy, Star, ArrowRight } from 'lucide-react';
+import { Shield, Zap, Mail, Copy, Star, ArrowRight, MessageSquare, Globe } from 'lucide-react';
 import SmartLink from '../components/SmartLink';
 
 const Home: React.FC = () => {
@@ -37,7 +37,7 @@ const Home: React.FC = () => {
           </h1>
 
           <p className="hero-subtitle" style={{ fontSize: 'clamp(1.1rem, 2vw, 1.4rem)', maxWidth: '750px', lineHeight: 1.6, marginBottom: '4rem' }}>
-            The premier high-performance relay system for developers, researchers, and professionals. 
+            The premier high-performance relay system for developers, researchers, and professionals.
             Secure your primary identity from surveillance, marketing spam, and data exposure.
           </p>
 
@@ -235,6 +235,67 @@ const Home: React.FC = () => {
             </motion.div>
           ))}
         </div>
+      </section>
+
+      {/* 🚀 Coming Soon: The Innovation Roadmap */}
+      <section style={{ padding: '8rem 0', overflow: 'hidden' }}>
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          className="card"
+          style={{
+            background: 'linear-gradient(135deg, rgba(182, 139, 245, 0.08) 0%, rgba(0,0,0,0) 100%)',
+            border: '2px solid rgba(182, 139, 245, 0.2)',
+            padding: '5rem',
+            borderRadius: '48px',
+            position: 'relative'
+          }}
+        >
+          <div style={{ position: 'absolute', top: '2rem', right: '3rem', display: 'flex', gap: '8px' }}>
+            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--primary)' }}></div>
+            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'rgba(255,255,255,0.2)' }}></div>
+            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'rgba(255,255,255,0.2)' }}></div>
+          </div>
+
+          <div style={{ maxWidth: '800px' }}>
+            <div className="badge" style={{ marginBottom: '1.5rem', background: 'rgba(182, 139, 245, 0.1)', color: 'var(--primary)' }}>
+              <span>Q3 2026</span>
+            </div>
+            <h2 style={{ fontSize: '4.5rem', fontWeight: 900, marginBottom: '1.5rem', letterSpacing: '-0.03em' }}>
+              The Future of <span className="gradient-text">Elite Privacy.</span>
+            </h2>
+            <p style={{ fontSize: '1.25rem', color: 'var(--text-muted)', marginBottom: '4rem', lineHeight: 1.6 }}>
+              We are expanding the TempGenPro ecosystem to provide absolute anonymity across all digital communication layers.
+            </p>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
+              <motion.div
+                whileHover={{ y: -10 }}
+                style={{ background: 'rgba(0,0,0,0.3)', padding: '2.5rem', borderRadius: '24px', border: '1px solid var(--border)' }}
+              >
+                <div style={{ width: '50px', height: '50px', borderRadius: '12px', background: 'rgba(37, 211, 102, 0.1)', color: '#25D366', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.5rem' }}>
+                  <MessageSquare size={24} />
+                </div>
+                <h3 style={{ fontSize: '1.5rem', fontWeight: 900, marginBottom: '1rem' }}>Permanent WhatsApp</h3>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', lineHeight: 1.6 }}>Deploy exclusive, virtual WhatsApp numbers for permanent private Business communication without revealing your personal SIM details.</p>
+                <div style={{ marginTop: '1.5rem', fontSize: '0.75rem', fontWeight: 900, color: '#25D366', textTransform: 'uppercase' }}>Coming Soon</div>
+              </motion.div>
+
+              <motion.div
+                whileHover={{ y: -10 }}
+                style={{ background: 'rgba(0,0,0,0.3)', padding: '2.5rem', borderRadius: '24px', border: '1px solid var(--border)' }}
+              >
+                <div style={{ width: '50px', height: '50px', borderRadius: '12px', background: 'rgba(182, 139, 245, 0.1)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.5rem' }}>
+                  <Globe size={24} />
+                </div>
+                <h3 style={{ fontSize: '1.5rem', fontWeight: 900, marginBottom: '1rem' }}>Social-Ready Relays</h3>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', lineHeight: 1.6 }}>Business Plans will unlock premium 'High-Reputation' domains which can be used to create accounts on social media platforms like Facebook, Instagram, and many more.</p>
+                <div style={{ marginTop: '1.5rem', fontSize: '0.75rem', fontWeight: 900, color: 'var(--primary)', textTransform: 'uppercase' }}>Coming Soon</div>
+              </motion.div>
+            </div>
+          </div>
+        </motion.div>
       </section>
     </div>
   );

@@ -53,7 +53,7 @@ const Features: React.FC = () => {
           transition={{ delay: 0.1 }}
           className="hero-subtitle"
         >
-          The trusted standard for developers, academic researchers, and business professionals 
+          The trusted standard for developers, academic researchers, and business professionals
           seeking secure, high-performance disposable email infrastructure for every workflow.
         </motion.p>
       </section>
@@ -114,6 +114,24 @@ const Features: React.FC = () => {
             </div>
           </motion.div>
         ))}
+      </div>
+      {/* 🚀 Feature Roadmap */}
+      <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
+        <h2 style={{ fontSize: '3rem', fontWeight: 900, marginBottom: '1.25rem' }}>Innovation <span className="gradient-text">Roadmap</span></h2>
+        <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem' }}>We're building the most complete anonymity ecosystem on the web.</p>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', marginBottom: '8rem' }}>
+        <div className="card" style={{ padding: '2.5rem', border: '1px solid rgba(37, 211, 102, 0.2)', position: 'relative' }}>
+          <span className="badge" style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: 'rgba(37, 211, 102, 0.1)', color: '#25D366', fontSize: '0.65rem' }}>COMING SOON</span>
+          <h4 style={{ fontSize: '1.4rem', fontWeight: 900, marginBottom: '1rem', color: 'var(--text-bold)' }}>Permanent WhatsApp</h4>
+          <p style={{ fontSize: '0.95rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>Secure, dedicated virtual numbers for WhatsApp business and personal use without a physical SIM card.</p>
+        </div>
+        <div className="card" style={{ padding: '2.5rem', border: '1px solid rgba(182, 139, 245, 0.2)', position: 'relative' }}>
+          <span className="badge" style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: 'rgba(182, 139, 245, 0.1)', color: 'var(--primary)', fontSize: '0.65rem' }}>COMING SOON</span>
+          <h4 style={{ fontSize: '1.4rem', fontWeight: 900, marginBottom: '1rem', color: 'var(--text-bold)' }}>Social Media Relays</h4>
+          <p style={{ fontSize: '0.95rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>Premium and optimized domains for creating accounts on social media platforms like Facebook, Instagram, and many more.</p>
+        </div>
       </div>
 
       {/* Call to Action */}
