@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Trash2, Copy, RefreshCw, MessageSquare, Clock, Inbox as InboxIcon, ChevronLeft, Mail, AlertTriangle } from 'lucide-react';
+import { Plus, Trash2, Copy, RefreshCw, MessageSquare, Clock, Inbox as InboxIcon, ChevronLeft, Mail, AlertTriangle, Shield, Zap, Ghost } from 'lucide-react';
 import api from '../services/api';
 import { socketService } from '../services/socket';
 import { useAuth } from '../context/AuthContext';
@@ -12,6 +12,13 @@ interface TempEmail {
   createdAt: string;
   expiresAt: string;
   _count: { messages: number };
+  
+  // Synthetic Persona Generator Fields
+  personaName?: string;
+  personaJob?: string;
+  personaBio?: string;
+  personaAvatar?: string;
+  camouflageEnabled: boolean;
 }
 
 interface Message {
@@ -21,6 +28,7 @@ interface Message {
   body: string;
   receivedAt: string;
   otpCode?: string;
+  trackersBlocked: number;
 }
 
 const ConfirmationModal: React.FC<{
@@ -78,8 +86,9 @@ const Inbox: React.FC = () => {
   const [selectedEmail, setSelectedEmail] = useState<TempEmail | null>(null);
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [loading, setLoading] = useState(true);
   const [msgLoading, setMsgLoading] = useState(false);
+  const [usePersona, setUsePersona] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [showMobileMessages, setShowMobileMessages] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isGenerating, setIsGenerating] = useState(false);
@@ -236,7 +245,7 @@ const Inbox: React.FC = () => {
   const generateNew = React.useCallback(async (type?: string) => {
     setIsGenerating(true);
     try {
-      const res = await api.post('/emails/generate', { type });
+      const res = await api.post('/emails/generate', { type, includePersona: usePersona });
       const newNode = {
         ...res.data,
         _count: res.data._count || { messages: 0 }
@@ -256,7 +265,7 @@ const Inbox: React.FC = () => {
     } finally {
       setIsGenerating(false);
     }
-  }, [showNotification]);
+  }, [showNotification, usePersona]);
 
   const deleteEmail = React.useCallback((id: number) => {
     setConfirmState({
@@ -299,6 +308,19 @@ const Inbox: React.FC = () => {
         }
       }
     });
+  };
+  
+  const handleToggleCamouflage = async (id: number) => {
+    try {
+      const res = await api.post(`/emails/${id}/camouflage`);
+      setEmails(prev => prev.map(e => e.id === id ? { ...e, camouflageEnabled: res.data.camouflageEnabled } : e));
+      if (selectedEmail?.id === id) {
+        setSelectedEmail(prev => prev ? { ...prev, camouflageEnabled: res.data.camouflageEnabled } : null);
+      }
+      showNotification(res.data.camouflageEnabled ? 'Camouflage Mode Activated (AI Noise Engaged)' : 'Camouflage Mode Deactivated');
+    } catch (err) {
+      showNotification('Failed to toggle camouflage', 'error');
+    }
   };
 
   const copyToClipboard = (text: string) => {
@@ -426,6 +448,59 @@ const Inbox: React.FC = () => {
             </div>
           </div>
           <div className="sidebar-content" style={{ padding: '1rem', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column' }}>
+            {/* ⚡ Identity Generator Toggle */}
+            <div style={{ padding: '0.75rem 0.5rem', marginBottom: '1rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ color: usePersona ? 'var(--primary)' : 'var(--text-muted)' }}>
+                  <Ghost size={14} />
+                </div>
+                <div>
+                  <p style={{ fontSize: '0.75rem', fontWeight: 900, color: 'var(--text-bold)', margin: 0 }}>GENERATE PERSONA</p>
+                  <p style={{ fontSize: '0.6rem', color: 'var(--text-muted)', margin: 0 }}>AI Identity for Node</p>
+                </div>
+              </div>
+              <label 
+                className="switch" 
+                style={{ 
+                  position: 'relative', 
+                  display: 'inline-block', 
+                  width: '34px', 
+                  height: '18px', 
+                  cursor: 'pointer' 
+                }}
+              >
+                <input 
+                  type="checkbox" 
+                  checked={usePersona} 
+                  onChange={(e) => setUsePersona(e.target.checked)}
+                  style={{ opacity: 0, width: 0, height: 0 }} 
+                />
+                <span 
+                  className="slider"
+                  style={{
+                    position: 'absolute',
+                    top: 0, left: 0, right: 0, bottom: 0,
+                    backgroundColor: usePersona ? 'var(--primary)' : 'rgba(255,255,255,0.1)',
+                    transition: '0.4s',
+                    borderRadius: '34px',
+                    boxShadow: usePersona ? '0 0 10px var(--primary-shadow)' : 'none'
+                  }}
+                >
+                  <span 
+                    style={{
+                      position: 'absolute',
+                      content: '""',
+                      height: '12px', width: '12px',
+                      left: usePersona ? '18px' : '3px',
+                      bottom: '3px',
+                      backgroundColor: usePersona ? '#000' : 'var(--text-muted)',
+                      transition: '0.4s',
+                      borderRadius: '50%'
+                    }}
+                  />
+                </span>
+              </label>
+            </div>
             {loading ? (
               <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <RefreshCw size={24} className="animate-spin text-primary" />
@@ -524,6 +599,11 @@ const Inbox: React.FC = () => {
                         <div>
                           <p style={{ fontWeight: 900, color: 'var(--text-bold)', margin: 0, fontSize: '1.1rem' }}>{selectedMessage.sender}</p>
                           <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: 0 }}>Directed to: {selectedEmail.email}</p>
+                          {selectedMessage.trackersBlocked > 0 && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '6px', color: '#10b981', fontSize: '0.75rem', fontWeight: 800 }}>
+                              <Shield size={12} fill="#10b981" fillOpacity={0.2} /> {selectedMessage.trackersBlocked} TRACKERS PURGED FROM INGESTION
+                            </div>
+                          )}
                         </div>
                       </div>
                       <div style={{ textAlign: 'right' }}>
@@ -542,8 +622,39 @@ const Inbox: React.FC = () => {
                       </div>
                     )}
 
-                    <div style={{ fontSize: '1.15rem', lineHeight: 1.9, color: 'var(--text)', whiteSpace: 'pre-wrap', padding: '2.5rem', borderRadius: '20px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-light)', overflowWrap: 'break-word', wordBreak: 'break-all' }}>
-                      {renderMessageBody(selectedMessage.body)}
+                    <div className="inbox-msg-content" style={{ borderRadius: '20px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-light)', overflow: 'hidden' }}>
+                      {/* ⚡ HTML Content Detection & Rendering */}
+                      {selectedMessage.body.trim().startsWith('<!DOCTYPE') || selectedMessage.body.includes('<html') || selectedMessage.body.includes('<div') ? (
+                        <div style={{ background: '#fff', height: '600px', width: '100%' }}>
+                          <iframe
+                            title="Packet Content"
+                            srcDoc={`
+                              <html>
+                                <head>
+                                  <base target="_blank">
+                                  <style>
+                                    body { font-family: sans-serif; margin: 20px; color: #333; line-height: 1.5; }
+                                    img { max-width: 100% !important; height: auto !important; }
+                                    a { color: #b68bf5; }
+                                  </style>
+                                </head>
+                                <body>${selectedMessage.body}</body>
+                              </html>
+                            `}
+                            sandbox="allow-popups allow-popups-to-escape-sandbox"
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              border: 'none',
+                              display: 'block'
+                            }}
+                          />
+                        </div>
+                      ) : (
+                        <div style={{ fontSize: '1.15rem', lineHeight: 1.9, color: 'var(--text)', whiteSpace: 'pre-wrap', padding: '2.5rem', overflowWrap: 'break-word', wordBreak: 'break-all' }}>
+                          {renderMessageBody(selectedMessage.body)}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -557,7 +668,7 @@ const Inbox: React.FC = () => {
                 exit={{ opacity: 0 }}
                 style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%' }}
               >
-                <div style={{ padding: '1.5rem 2.5rem', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.01)' }}>
+                <div className="inbox-email-header" style={{ padding: '1.5rem 2.5rem', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.01)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                     <button 
                       onClick={(e) => { e.stopPropagation(); setShowMobileMessages(false); }} 
@@ -574,11 +685,51 @@ const Inbox: React.FC = () => {
                     <span style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Active Tunnel Pipeline</span>
                   </div>
                   </div>
-                  <div style={{ display: 'flex', gap: '0.75rem' }}>
-                    <button onClick={() => copyToClipboard(selectedEmail.email)} className="btn btn-nav-round btn-copy" title="Copy Address"><Copy size={16} /></button>
-                    <button onClick={() => fetchMessages(selectedEmail.id)} className="btn btn-nav-round btn-refresh" title="Refresh List"><RefreshCw size={16} className={msgLoading ? 'animate-spin' : ''} /></button>
-                  </div>
+                    <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                      <button 
+                        onClick={() => handleToggleCamouflage(selectedEmail.id)} 
+                        className={`btn btn-sm ${selectedEmail.camouflageEnabled ? 'btn-primary' : 'btn-secondary'}`}
+                        style={{ 
+                          borderRadius: '10px', 
+                          padding: '0.5rem 1rem',
+                          background: selectedEmail.camouflageEnabled ? 'var(--primary)' : 'rgba(255,255,255,0.05)',
+                          color: selectedEmail.camouflageEnabled ? '#000' : 'var(--text-muted)',
+                          marginRight: '0.5rem',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          fontSize: '0.7rem',
+                          fontWeight: 900
+                        }}
+                        title={selectedEmail.camouflageEnabled ? 'AI Noise Active' : 'Engage Camouflage'}
+                      >
+                        {selectedEmail.camouflageEnabled ? <Zap size={14} fill="currentColor" /> : <Ghost size={14} />}
+                        {selectedEmail.camouflageEnabled ? 'CAMOUFLAGE: ON' : 'CAMOUFLAGE: OFF'}
+                      </button>
+                      <button onClick={() => copyToClipboard(selectedEmail.email)} className="btn btn-nav-round btn-copy" title="Copy Address"><Copy size={16} /></button>
+                      <button onClick={() => fetchMessages(selectedEmail.id)} className="btn btn-nav-round btn-refresh" title="Refresh List"><RefreshCw size={16} className={msgLoading ? 'animate-spin' : ''} /></button>
+                    </div>
                 </div>
+
+                {/* Identity Multiplexer: Persona Card */}
+                {selectedEmail.personaName && (
+                  <div className="persona-banner" style={{ padding: '1.5rem 2.5rem', background: 'rgba(182, 139, 245, 0.03)', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '2rem' }}>
+                    <img src={selectedEmail.personaAvatar} alt="" style={{ width: '60px', height: '60px', borderRadius: '18px', border: '2px solid var(--primary)', objectFit: 'cover' }} />
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                        <h4 style={{ fontSize: '1.1rem', fontWeight: 900, color: 'var(--text-bold)' }}>{selectedEmail.personaName}</h4>
+                        <span className="badge" style={{ fontSize: '0.6rem', background: 'var(--primary)', color: '#000', padding: '2px 8px' }}>IDENTITY ASSIGNED</span>
+                      </div>
+                      <p style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--primary)', marginBottom: '4px' }}>{selectedEmail.personaJob}</p>
+                      <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0, fontStyle: 'italic', maxWidth: '600px' }}>"{selectedEmail.personaBio}"</p>
+                    </div>
+                    <div style={{ display: 'flex', gap: '0.75rem' }}>
+                      <button onClick={() => copyToClipboard(`Name: ${selectedEmail.personaName}\nJob: ${selectedEmail.personaJob}\nBio: ${selectedEmail.personaBio}`)} className="btn btn-secondary btn-sm mobile-hidden" style={{ borderRadius: '10px' }}>
+                        <Copy size={14} /> COPY IDENTITY
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                 <div style={{ flex: 1, overflowY: 'auto' }}>
                   {msgLoading && messages.length === 0 ? (
@@ -620,7 +771,12 @@ const Inbox: React.FC = () => {
                             <span style={{ fontWeight: 800, color: 'var(--text-bold)', whiteSpace: 'nowrap', fontSize: '0.95rem' }}>{msg.subject}</span>
                             <span style={{ color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: '0.9rem' }}>- {msg.body.substring(0, 120)}</span>
                           </div>
-                          <div className="gmail-row-time" style={{ width: '100px', textAlign: 'right', fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 800, whiteSpace: 'nowrap' }}>
+                          <div className="gmail-row-time" style={{ width: '120px', textAlign: 'right', fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 800, whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '12px' }}>
+                            {msg.trackersBlocked > 0 && (
+                              <span title={`${msg.trackersBlocked} Trackers Purged`}>
+                                <Shield size={14} style={{ color: '#10b981' }} />
+                              </span>
+                            )}
                             {new Date(msg.receivedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </div>
                         </div>

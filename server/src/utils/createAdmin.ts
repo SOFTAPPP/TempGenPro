@@ -1,0 +1,34 @@
+import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
+
+const prisma = new PrismaClient();
+
+async function createAdmin() {
+  const username = "aritrada420";
+  const email = "aritradatt39@gmail.com";
+  const password = "Aritradutta@2005";
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  try {
+    const admin = await prisma.user.create({
+      data: {
+        username,
+        email,
+        password: hashedPassword,
+        role: 'ADMIN'
+      }
+    });
+    console.log('✅ Admin User Created Successfully:', admin.username);
+  } catch (err: any) {
+    if (err.code === 'P2002') {
+      console.log('ℹ️ User already exists.');
+    } else {
+      console.error('❌ Error creating admin:', err);
+    }
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+createAdmin();

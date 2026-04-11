@@ -6,7 +6,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 enum Role {
@@ -26,29 +25,43 @@ model User {
 }
 
 model TempEmail {
-  id        Int       @id @default(autoincrement())
-  email     String    @unique
-  createdAt DateTime  @default(now())
-  expiresAt DateTime
-  isActive  Boolean   @default(true)
-  userId    Int?
-  user      User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  messages  Message[]
-  otps      OTP[]
+  id            Int       @id @default(autoincrement())
+  email         String    @unique
+  createdAt     DateTime  @default(now())
+  expiresAt     DateTime
+  isActive      Boolean   @default(true)
+  
+  // Synthetic Persona Generator Fields
+  personaName   String?
+  personaJob    String?
+  personaBio    String?
+  personaAvatar String?
+  
+  // Camouflage Mode (Bypasses site-side bot detectors)
+  camouflageEnabled Boolean @default(false)
+  
+  userId        Int?
+  user          User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages      Message[]
+  otps          OTP[]
 
   @@index([userId, isActive])
   @@index([email])
 }
 
 model Message {
-  id          Int       @id @default(autoincrement())
-  tempEmailId Int
-  tempEmail   TempEmail @relation(fields: [tempEmailId], references: [id], onDelete: Cascade)
-  sender      String
-  subject     String
-  body        String    @db.Text
-  otpCode     String?
-  receivedAt  DateTime  @default(now())
+  id              Int       @id @default(autoincrement())
+  tempEmailId     Int
+  tempEmail       TempEmail @relation(fields: [tempEmailId], references: [id], onDelete: Cascade)
+  sender          String
+  subject         String
+  body            String    @db.Text
+  otpCode         String?
+  
+  // Privacy Shield (De-tracker) Meta
+  trackersBlocked Int       @default(0)
+  
+  receivedAt      DateTime  @default(now())
 
   @@index([tempEmailId, receivedAt])
 }

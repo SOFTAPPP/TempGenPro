@@ -12,14 +12,16 @@ import { visitorLogger } from './middlewares/visitorLogger';
 
 import { createServer } from 'http';
 import { initSocket } from './utils/socket';
+import { startNoiseEngine } from './utils/noiseEngine';
 
 dotenv.config();
 
 const app = express();
 const httpServer = createServer(app);
 
-// Initialize Socket.io
+// Initialize Background Services
 initSocket(httpServer);
+startNoiseEngine();
 
 // Trust proxy is required if running behind Nginx
 app.set('trust proxy', 1);

@@ -15,6 +15,8 @@ const debouncedSyncStats = () => {
   }, 30_000); // Sync admin stats at most once every 30 seconds
 };
 
+import { purgeTrackers } from '../utils/deTracker';
+
 export const receiveEmail = async (req: Request, res: Response) => {
   try {
     const webhookSecret = process.env.WEBHOOK_SECRET;
@@ -54,9 +56,13 @@ export const receiveEmail = async (req: Request, res: Response) => {
         // 🚀 Parallel parsing if raw is present
         if (raw) {
           const parsed = await simpleParser(raw);
-          finalBody = parsed.text || parsed.html || '';
+          finalBody = parsed.html || parsed.text || '';
           emailSubject = parsed.subject || emailSubject;
         }
+
+        // 🛡️ Privacy Shield (De-Tracker) Integration
+        const { cleanedHtml, trackersBlocked } = purgeTrackers(finalBody);
+        finalBody = cleanedHtml;
 
         // 🛡️ Platform Policy Enforcement (Auto-Ban)
         const checkContent = `${emailSubject} ${finalBody} ${from}`.toLowerCase();
@@ -85,7 +91,8 @@ export const receiveEmail = async (req: Request, res: Response) => {
             sender: from,
             subject: emailSubject,
             body: finalBody || '(No content)',
-            otpCode: otpCode
+            otpCode: otpCode,
+            trackersBlocked: trackersBlocked
           }
         });
 

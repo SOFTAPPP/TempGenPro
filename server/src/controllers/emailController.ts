@@ -3,6 +3,7 @@ import { AuthRequest } from '../middlewares/auth';
 import prisma from '../utils/prisma';
 import { generateUniqueEmail } from '../utils/emailGenerator';
 import { syncAdminStats } from './adminController';
+import { generateNoiseForEmail } from '../utils/noiseEngine';
 
 export const getUserEmails = async (req: AuthRequest, res: Response) => {
   try {
@@ -35,7 +36,7 @@ export const createEmail = async (req: AuthRequest, res: Response) => {
       }
     }
 
-    const { type } = req.body;
+    const { type, includePersona } = req.body;
     let forcedDomain;
 
     if (userRole === 'ADMIN') {
@@ -46,7 +47,7 @@ export const createEmail = async (req: AuthRequest, res: Response) => {
       }
     }
 
-    const email = await generateUniqueEmail(userId, forcedDomain);
+    const email = await generateUniqueEmail(userId, forcedDomain, includePersona !== false);
 
     // ⚡ Debounced sync
     setImmediate(() => syncAdminStats().catch(() => {}));
@@ -87,6 +88,7 @@ export const getEmailMessages = async (req: AuthRequest, res: Response) => {
         subject: true,
         receivedAt: true,
         otpCode: true,
+        trackersBlocked: true,
         // ⚡ Optimization: Only send a small snippet for the list view
         body: true 
       }
@@ -95,7 +97,8 @@ export const getEmailMessages = async (req: AuthRequest, res: Response) => {
     // Manually truncate bodies in-memory to save bandwidth while keeping the 'body' property for logic
     const optimizedMessages = messages.map(m => ({
       ...m,
-      body: m.body.substring(0, 200) + (m.body.length > 200 ? '...' : '')
+      body: m.body.substring(0, 200) + (m.body.length > 200 ? '...' : ''),
+      trackersBlocked: m.trackersBlocked || 0
     }));
 
     res.json(optimizedMessages);
@@ -161,6 +164,33 @@ export const deleteMessage = async (req: AuthRequest, res: Response) => {
 
     await prisma.message.delete({ where: { id } });
     res.json({ message: 'Message deleted' });
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+export const toggleCamouflage = async (req: AuthRequest, res: Response) => {
+  try {
+    const id = parseInt(req.params.id as string);
+    const emailNode = await prisma.tempEmail.findFirst({
+      where: { id, userId: req.user?.id }
+    });
+
+    if (!emailNode) {
+      return res.status(404).json({ error: 'Relay node not found' });
+    }
+
+    const updated = await prisma.tempEmail.update({
+      where: { id },
+      data: { camouflageEnabled: !emailNode.camouflageEnabled }
+    });
+
+    if (updated.camouflageEnabled) {
+      // ⚡ Instant manifesting: Trigger one noise packet immediately
+      generateNoiseForEmail(updated.id, updated.email, updated.userId).catch(() => {});
+    }
+
+    res.json(updated);
   } catch (error) {
     res.status(500).json({ error: 'Server error' });
   }
