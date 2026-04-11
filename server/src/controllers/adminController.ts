@@ -43,6 +43,35 @@ export const getAllUserData = async (req: Request, res: Response) => {
   }
 };
 
+export const syncAdminStats = async () => {
+  try {
+    const [totalUsers, totalTempEmails, activeTempEmails, totalMessages, totalVisitorLogs] = await Promise.all([
+      prisma.user.count(),
+      prisma.tempEmail.count(),
+      prisma.tempEmail.count({ where: { isActive: true } }),
+      prisma.message.count(),
+      prisma.visitorLog.count()
+    ]);
+
+    const statsData = {
+      totalUsers,
+      totalTempEmails,
+      activeTempEmails,
+      totalMessages,
+      totalVisitorLogs
+    };
+
+    // Update Cache
+    statsCache = { data: statsData, timestamp: Date.now() };
+
+    // Broadcast to Admin Nexus
+    const { broadcastAdminStats } = require('../utils/socket');
+    broadcastAdminStats(statsData);
+  } catch (error) {
+    console.error('Failed to sync admin stats:', error);
+  }
+};
+
 export const deleteUser = async (req: Request, res: Response) => {
   const { id } = req.params;
   try {
@@ -61,6 +90,10 @@ export const deleteUser = async (req: Request, res: Response) => {
     await prisma.user.delete({
       where: { id: userId }
     });
+
+    // ⚡ SYNC
+    setImmediate(syncAdminStats);
+
     res.json({ message: 'User and all associated data deleted successfully' });
   } catch (error) {
     res.status(500).json({ error: 'Failed to delete user' });
@@ -106,18 +139,20 @@ export const getStats = async (req: Request, res: Response) => {
       return res.json(statsCache.data);
     }
 
-    const [totalUsers, totalTempEmails, activeTempEmails, totalMessages] = await Promise.all([
+    const [totalUsers, totalTempEmails, activeTempEmails, totalMessages, totalVisitorLogs] = await Promise.all([
       prisma.user.count(),
       prisma.tempEmail.count(),
       prisma.tempEmail.count({ where: { isActive: true } }),
-      prisma.message.count()
+      prisma.message.count(),
+      prisma.visitorLog.count()
     ]);
 
     const statsData = {
       totalUsers,
       totalTempEmails,
       activeTempEmails,
-      totalMessages
+      totalMessages,
+      totalVisitorLogs
     };
 
     statsCache = { data: statsData, timestamp: now };
@@ -146,6 +181,10 @@ export const deleteTempEmail = async (req: Request, res: Response) => {
     await prisma.tempEmail.delete({
       where: { id: parseInt(id as string) }
     });
+
+    // ⚡ SYNC
+    setImmediate(syncAdminStats);
+
     res.json({ message: 'Temporary email and associated messages deleted successfully' });
   } catch (error) {
     res.status(500).json({ error: 'Failed to delete temporary email' });

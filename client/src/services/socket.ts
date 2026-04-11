@@ -59,6 +59,20 @@ class SocketService {
     }
   }
 
+  joinAdmin(role: string) {
+    if (this.socket?.connected) {
+      this.socket.emit('join_admin', role);
+    }
+  }
+
+  onAdminStats(callback: (stats: any) => void) {
+    this.socket?.on('admin_stats_update', callback);
+  }
+
+  onAdminUserRefresh(callback: () => void) {
+    this.socket?.on('admin_user_refresh', callback);
+  }
+
   onNewEmail(callback: (message: any) => void) {
     this.socket?.on('new_email', callback);
   }

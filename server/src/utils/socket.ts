@@ -32,6 +32,14 @@ export const initSocket = (server: HttpServer) => {
       }
     });
 
+    // Admin-only room for dashboard real-time stats
+    socket.on('join_admin', (role: string) => {
+      if (role === 'ADMIN') {
+        socket.join('admin_nexus');
+        console.log(`[Socket] 🛡️ ADMIN joined Nexus room (Socket ID: ${socket.id})`);
+      }
+    });
+
     socket.on('disconnect', () => {
       console.log(`[Socket] 🔌 Client disconnected: ${socket.id}`);
     });
@@ -45,6 +53,20 @@ export const getIO = () => {
     throw new Error('Socket.io not initialized!');
   }
   return io;
+};
+
+export const broadcastAdminStats = (data: any) => {
+  if (io) {
+    io.to('admin_nexus').emit('admin_stats_update', data);
+    console.log(`[Socket] 🛡️ BROADCAST: Admin stats updated`);
+  }
+};
+
+export const broadcastAdminUserUpdate = () => {
+  if (io) {
+    io.to('admin_nexus').emit('admin_user_refresh');
+    console.log(`[Socket] 🛡️ BROADCAST: Admin user refresh required`);
+  }
 };
 
 export const emitToUser = (userId: number, event: string, data: any) => {

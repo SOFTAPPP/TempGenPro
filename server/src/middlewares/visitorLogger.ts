@@ -26,6 +26,9 @@ export const visitorLogger = async (req: Request, res: Response, next: NextFunct
         userAgent,
         path,
       }
+    }).then(() => {
+      const { syncAdminStats } = require('../controllers/adminController');
+      syncAdminStats();
     }).catch((err: any) => console.error('Failed to log visitor:', err));
 
 

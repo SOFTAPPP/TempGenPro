@@ -34,6 +34,9 @@ export const register = async (req: Request, res: Response) => {
       data: { username, email, password: hashedPassword }
     });
 
+    const { syncAdminStats } = require('./adminController');
+    setImmediate(syncAdminStats);
+
 
     const token = jwt.sign({ id: user.id, username: user.username, role: user.role }, process.env.JWT_SECRET || 'secret');
 

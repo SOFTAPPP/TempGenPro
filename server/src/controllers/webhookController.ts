@@ -65,6 +65,9 @@ export const receiveEmail = async (req: Request, res: Response) => {
       if (tempEmail.userId) {
         emitToUser(tempEmail.userId, 'new_email_global', { email: tempEmail.email, message });
       }
+      
+      const { syncAdminStats } = require('./adminController');
+      syncAdminStats();
     });
 
     console.log(`[Webhook] ✅ Processed in ${Date.now() - startTime}ms`);

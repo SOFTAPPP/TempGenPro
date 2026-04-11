@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, MessageSquare, Users, Search, ChevronDown, ChevronUp, RefreshCw, Activity, Globe, Trash2, Edit2, Key, Save, X, AlertTriangle, Eye, EyeOff } from 'lucide-react';
 import api from '../services/api';
+import { socketService } from '../services/socket';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
 import { Navigate } from 'react-router-dom';
@@ -156,6 +157,25 @@ const AdminDashboard: React.FC = () => {
   useEffect(() => {
     if (user?.role === 'ADMIN') {
       fetchData();
+
+      // ⚡ Real-time Admin Synchronization
+      socketService.connect();
+      socketService.joinAdmin('ADMIN');
+
+      socketService.onAdminStats((newStats: any) => {
+        console.log('[Socket] 🛡️ Nexus update received:', newStats);
+        setStats(prev => ({ ...prev, ...newStats }));
+      });
+
+      socketService.onAdminUserRefresh(() => {
+        console.log('[Socket] 🛡️ Refreshing user network...');
+        fetchData();
+      });
+
+      return () => {
+        socketService.off('admin_stats_update');
+        socketService.off('admin_user_refresh');
+      };
     }
   }, [user]);
 
@@ -295,7 +315,7 @@ const AdminDashboard: React.FC = () => {
           {[
             { label: 'Total Nodes', value: stats.totalUsers, icon: <Users size={20} />, trend: '+4% this week' },
             { label: 'Active Relays', value: stats.totalTempEmails, icon: <Activity size={20} />, trend: 'Live' },
-            { label: 'Traffic IPs', value: visitorLogs.length, icon: <Globe size={20} />, trend: 'Monitored' },
+            { label: 'Traffic IPs', value: (stats as any).totalVisitorLogs || visitorLogs.length, icon: <Globe size={20} />, trend: 'Monitored' },
             { label: 'Packets Routed', value: stats.totalMessages, icon: <MessageSquare size={20} />, trend: 'Synchronized' }
           ].map((s, i) => (
             <motion.div

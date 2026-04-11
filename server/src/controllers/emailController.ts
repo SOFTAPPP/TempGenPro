@@ -35,6 +35,11 @@ export const createEmail = async (req: AuthRequest, res: Response) => {
     }
 
     const email = await generateUniqueEmail(userId);
+    
+    // ⚡ SYNC
+    const { syncAdminStats } = require('./adminController');
+    setImmediate(syncAdminStats);
+
     res.status(201).json(email);
   } catch (error) {
     res.status(500).json({ error: 'Server error' });
@@ -48,6 +53,11 @@ export const deleteEmail = async (req: AuthRequest, res: Response) => {
       where: { id: parseInt(id), userId: req.user?.id },
       data: { isActive: false }
     });
+
+    // ⚡ SYNC
+    const { syncAdminStats } = require('./adminController');
+    setImmediate(syncAdminStats);
+
     res.json({ message: 'Email deleted' });
   } catch (error) {
     res.status(500).json({ error: 'Server error' });
