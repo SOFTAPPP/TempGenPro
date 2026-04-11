@@ -20,20 +20,20 @@ export const getAllUserData = async (req: Request, res: Response) => {
             isActive: true,
             createdAt: true,
             messages: {
+              // ⚡ OPTIMIZATION: Only fetch metadata, NOT body text (avoids massive payloads)
               select: {
                 id: true,
                 sender: true,
                 subject: true,
-                body: true,
                 receivedAt: true,
-              }
+              },
+              orderBy: { receivedAt: 'desc' },
+              take: 20 // Limit to last 20 messages per inbox
             }
           }
         }
       } as any,
-      orderBy: {
-        createdAt: 'desc'
-      }
+      orderBy: { createdAt: 'desc' }
     });
 
     res.json(users);

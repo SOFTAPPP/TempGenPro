@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@700;800;900&display=swap');
+/* Fonts loaded via HTML <link> with non-blocking strategy for optimal LCP */
 
 :root {
   /* Color Palette - Restored Original Midnight Lavender & Coral */
@@ -39,16 +39,17 @@
   transform: translateZ(0);
 }
 
-/* Force GPU acceleration for smooth animations */
-body,
-.glass-card,
-.glass-main,
-.btn,
-.msg-card,
-.badge {
+/* GPU acceleration only for elements that frequently animate */
+.animate-spin {
+  will-change: transform;
   transform: translateZ(0);
   backface-visibility: hidden;
-  will-change: transform, opacity;
+}
+
+.btn,
+.email-item,
+.msg-card {
+  will-change: transform;
 }
 
 h1,

@@ -137,14 +137,16 @@ const Inbox: React.FC = () => {
     }
   }, []);
 
-  const fetchMessageDetail = React.useCallback(async (msgId: number) => {
+  const fetchMessageDetail = React.useCallback(async (msgId: number, currentBody: string) => {
+    // ⚡ Only fetch full detail if body appears truncated (ends with '...')
+    if (!currentBody.endsWith('...')) return;
     try {
       const res = await api.get(`/emails/messages/${msgId}/detail`);
-      setSelectedMessage(res.data);
-      // Also update the message in the list so it's cached
-      setMessages(prev => prev.map(m => m.id === msgId ? res.data : m));
+      // Update in place once full body arrives
+      setMessages(prev => prev.map(m => m.id === msgId ? { ...m, body: res.data.body } : m));
+      setSelectedMessage(prev => prev?.id === msgId ? { ...prev, body: res.data.body } : prev);
     } catch (err) {
-      console.error('Error fetching message detail');
+      // Silently fail - user already sees the truncated body
     }
   }, []);
 
@@ -595,8 +597,10 @@ const Inbox: React.FC = () => {
                         <div
                           key={msg.id}
                           onClick={() => {
+                            // ⚡ Show message INSTANTLY from local state (zero latency)
                             setSelectedMessage(msg);
-                            fetchMessageDetail(msg.id);
+                            // Fetch full body in background only if needed
+                            fetchMessageDetail(msg.id, msg.body);
                           }}
                           className="gmail-row"
                           style={{

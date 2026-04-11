@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import prisma from '../utils/prisma';
+// Removed top-level import to prevent circular dependency
 
 export const register = async (req: Request, res: Response) => {
   try {
@@ -34,11 +35,13 @@ export const register = async (req: Request, res: Response) => {
       data: { username, email, password: hashedPassword }
     });
 
-    const { syncAdminStats } = require('./adminController');
-    setImmediate(syncAdminStats);
-
-
     const token = jwt.sign({ id: user.id, username: user.username, role: user.role }, process.env.JWT_SECRET || 'secret');
+
+    // ⚡ Late-load require to prevent circular dependency boot crash
+    setImmediate(() => {
+      const { syncAdminStats } = require('./adminController');
+      syncAdminStats().catch(() => {});
+    });
 
     res.status(201).json({ token, user: { id: user.id, username: user.username, email: user.email, role: user.role } });
   } catch (error) {

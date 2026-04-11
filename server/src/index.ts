@@ -21,28 +21,45 @@ const httpServer = createServer(app);
 // Initialize Socket.io
 initSocket(httpServer);
 
-// Trust proxy is required if running behind Nginx (Hostinger VPS standard)
+// Trust proxy is required if running behind Nginx
 app.set('trust proxy', 1);
 
-// Tracking visitors (IP addresses)
-app.use(visitorLogger);
+// ⚡ COMPRESSION FIRST: Ensures all responses get gzipped (including API JSON)
+app.use(compression({ level: 6, threshold: 1024 }));
 
+// ⚡ SECURITY: Helmet + strict CORS in production
+app.use(helmet({
+  contentSecurityPolicy: false, // Managed by Nginx
+  crossOriginEmbedderPolicy: false,
+}));
 
-// Security and Performance Optimization
-app.use(helmet());
-app.use(compression());
-app.use(cors());
-app.use(express.json({ limit: '5mb' })); // Increased limit to accommodate emails with HTML and small attachments
+const allowedOrigins = process.env.FRONTEND_URL
+  ? process.env.FRONTEND_URL.split(',')
+  : ['https://tempgenpro.com', 'https://www.tempgenpro.com'];
 
-// Rate Limiting to prevent brute force and abuse
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production' ? allowedOrigins : '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-webhook-secret'],
+  credentials: false,
+}));
+
+// ⚡ Parse JSON (10mb limit for large email payloads)
+app.use(express.json({ limit: '10mb' }));
+
+// ⚡ Rate Limiting: Webhook gets higher limit, API gets standard
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 1000, // Increased to 1000 to ensure dashboard buttons remain responsive
+  windowMs: 15 * 60 * 1000,
+  max: 500, // Per-IP limit
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: 'Too many requests, please try again later.' }
+  message: { error: 'Too many requests, please try again later.' },
+  skip: (req) => req.path === '/health', // Never rate-limit health checks
 });
 app.use('/api/', limiter);
+
+// ⚡ Visitor logging (non-blocking, throttled)
+app.use(visitorLogger);
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -58,7 +75,7 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Global Error Handler for cleaner production logs
+// Global Error Handler
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error(`[Error] ${err.message}`);
   res.status(err.status || 500).json({

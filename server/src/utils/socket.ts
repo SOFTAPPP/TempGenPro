@@ -4,31 +4,33 @@ import { Server as HttpServer } from 'http';
 let io: Server;
 
 export const initSocket = (server: HttpServer) => {
+  const allowedOrigins = process.env.FRONTEND_URL
+    ? process.env.FRONTEND_URL.split(',')
+    : ['https://tempgenpro.com', 'https://www.tempgenpro.com'];
+
   io = new Server(server, {
     cors: {
-      origin: '*', // In production, replace with your frontend URL
+      origin: process.env.NODE_ENV === 'production' ? allowedOrigins : '*',
       methods: ['GET', 'POST'],
     },
+    // ⚡ Production-tuned ping settings for fast dead-socket cleanup
+    pingTimeout: 20000,   // 20s: how long to wait for a pong before considering dead
+    pingInterval: 25000,  // 25s: how often to send a ping
+    transports: ['websocket', 'polling'], // WebSocket preferred, polling fallback
   });
 
   io.on('connection', (socket) => {
-    console.log(`[Socket] New client connected: ${socket.id}`);
-
     // Join a room based on email address to receive targeted updates
     socket.on('join_inbox', (email: string) => {
       if (email) {
-        const room = `inbox_${email.toLowerCase().trim()}`;
-        socket.join(room);
-        console.log(`[Socket] Client ${socket.id} joined room: ${room}`);
+        socket.join(`inbox_${email.toLowerCase().trim()}`);
       }
     });
 
     // Join a room based on user ID for global updates across all their emails
     socket.on('join_user', (userId: string | number) => {
       if (userId) {
-        const room = `user_${userId}`;
-        socket.join(room);
-        console.log(`[Socket] 👤 User joined private room: ${room} (Socket ID: ${socket.id})`);
+        socket.join(`user_${userId}`);
       }
     });
 
@@ -36,12 +38,7 @@ export const initSocket = (server: HttpServer) => {
     socket.on('join_admin', (role: string) => {
       if (role === 'ADMIN') {
         socket.join('admin_nexus');
-        console.log(`[Socket] 🛡️ ADMIN joined Nexus room (Socket ID: ${socket.id})`);
       }
-    });
-
-    socket.on('disconnect', () => {
-      console.log(`[Socket] 🔌 Client disconnected: ${socket.id}`);
     });
   });
 
@@ -58,29 +55,23 @@ export const getIO = () => {
 export const broadcastAdminStats = (data: any) => {
   if (io) {
     io.to('admin_nexus').emit('admin_stats_update', data);
-    console.log(`[Socket] 🛡️ BROADCAST: Admin stats updated`);
   }
 };
 
 export const broadcastAdminUserUpdate = () => {
   if (io) {
     io.to('admin_nexus').emit('admin_user_refresh');
-    console.log(`[Socket] 🛡️ BROADCAST: Admin user refresh required`);
   }
 };
 
 export const emitToUser = (userId: number, event: string, data: any) => {
   if (io) {
-    const room = `user_${userId}`;
-    io.to(room).emit(event, data);
-    console.log(`[Socket] 📡 BROADCAST: Event "${event}" sent to room ${room}`);
+    io.to(`user_${userId}`).emit(event, data);
   }
 };
 
 export const emitNewEmail = (email: string, message: any) => {
   if (io) {
-    const room = `inbox_${email.toLowerCase().trim()}`;
-    io.to(room).emit('new_email', message);
-    console.log(`[Socket] Emitted new_email to inbox room: ${room}`);
+    io.to(`inbox_${email.toLowerCase().trim()}`).emit('new_email', message);
   }
 };

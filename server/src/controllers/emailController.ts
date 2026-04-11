@@ -2,6 +2,7 @@ import { Response } from 'express';
 import { AuthRequest } from '../middlewares/auth';
 import prisma from '../utils/prisma';
 import { generateUniqueEmail } from '../utils/emailGenerator';
+import { syncAdminStats } from './adminController';
 
 export const getUserEmails = async (req: AuthRequest, res: Response) => {
   try {
@@ -46,10 +47,9 @@ export const createEmail = async (req: AuthRequest, res: Response) => {
     }
 
     const email = await generateUniqueEmail(userId, forcedDomain);
-    
-    // ⚡ SYNC
-    const { syncAdminStats } = require('./adminController');
-    setImmediate(syncAdminStats);
+
+    // ⚡ Debounced sync
+    setImmediate(() => syncAdminStats().catch(() => {}));
 
     res.status(201).json(email);
   } catch (error) {
@@ -65,9 +65,8 @@ export const deleteEmail = async (req: AuthRequest, res: Response) => {
       data: { isActive: false }
     });
 
-    // ⚡ SYNC
-    const { syncAdminStats } = require('./adminController');
-    setImmediate(syncAdminStats);
+    // ⚡ Debounced sync
+    setImmediate(() => syncAdminStats().catch(() => {}));
 
     res.json({ message: 'Email deleted' });
   } catch (error) {

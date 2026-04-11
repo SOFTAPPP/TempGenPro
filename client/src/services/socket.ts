@@ -15,6 +15,8 @@ class SocketService {
       console.log(`[Socket] 📡 Connecting to: ${SOCKET_URL}`);
       this.socket = io(SOCKET_URL, {
         transports: ['websocket', 'polling'],
+        upgrade: true,
+        rememberUpgrade: true,
         reconnectionAttempts: 20,
         reconnectionDelay: 1000,
         autoConnect: true,

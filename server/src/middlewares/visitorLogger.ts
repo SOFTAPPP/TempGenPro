@@ -1,40 +1,41 @@
 import { Request, Response, NextFunction } from 'express';
 import prisma from '../utils/prisma';
 
-export const visitorLogger = async (req: Request, res: Response, next: NextFunction) => {
-  // We only log if it's not an internal/admin request or a basic health check
-  // and we don't want to log every single static asset request if express serves them.
-  // Generally, logging visits to the main app layout or API endpoints is enough.
+// ⚡ IP Throttle Map: one log per IP per 5 minutes to prevent DB spam
+const IP_THROTTLE_MS = 5 * 60 * 1000; // 5 minutes
+const ipThrottleMap = new Map<string, number>();
 
-  if (req.path === '/health') {
-    return next();
+// Clean up old throttle entries every 10 minutes to prevent memory leaks
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, ts] of ipThrottleMap.entries()) {
+    if (now - ts > IP_THROTTLE_MS) ipThrottleMap.delete(ip);
+  }
+}, 10 * 60 * 1000);
+
+export const visitorLogger = (req: Request, res: Response, next: NextFunction) => {
+  // ⚡ Only log real page/frontend navigations — skip API, health, socket.io
+  const path = req.path;
+  const shouldSkip =
+    path === '/health' ||
+    path.startsWith('/api/') ||
+    path.startsWith('/socket.io') ||
+    path.startsWith('/uploads/');
+
+  if (!shouldSkip) {
+    const ip = ((req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress || 'unknown').split(',')[0].trim();
+    const now = Date.now();
+    const lastLogged = ipThrottleMap.get(ip);
+
+    // ⚡ Only create a DB record if this IP hasn't been logged recently
+    if (!lastLogged || now - lastLogged > IP_THROTTLE_MS) {
+      ipThrottleMap.set(ip, now);
+      // Fire-and-forget: do NOT await, do NOT block the response pipeline
+      prisma.visitorLog.create({
+        data: { ip, userAgent: req.headers['user-agent'], path }
+      }).catch(() => { /* silently ignore log failures */ });
+    }
   }
 
-  try {
-    const ip = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress || 'unknown';
-    const userAgent = req.headers['user-agent'];
-    const path = req.path;
-
-    // We can also throttle this so we don't spam the DB with the same IP in a short period
-    // But for "whoever comes to my website", a log entry per request or per session is requested.
-    // Let's log every request for now as requested, but ideally we'd filter for unique sessions.
-
-    // Asynchronous logging so we don't block the response
-    prisma.visitorLog.create({
-      data: {
-        ip,
-        userAgent,
-        path,
-      }
-    }).then(() => {
-      const { syncAdminStats } = require('../controllers/adminController');
-      syncAdminStats();
-    }).catch((err: any) => console.error('Failed to log visitor:', err));
-
-
-  } catch (error) {
-    console.error('Visitor logging error:', error);
-  }
-
-  next();
+  next(); // Always call next immediately — logging is fully non-blocking
 };

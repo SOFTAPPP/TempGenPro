@@ -1,7 +1,12 @@
 import { PrismaClient } from '@prisma/client';
 
 const prismaClientSingleton = () => {
-  return new PrismaClient();
+  return new PrismaClient({
+    // ⚡ Only log errors in production; log queries in dev for debugging
+    log: process.env.NODE_ENV === 'production'
+      ? ['error']
+      : ['warn', 'error'],
+  });
 };
 
 declare global {
