@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, Zap, Mail, Copy, Star, ArrowRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import SmartLink from '../components/SmartLink';
 
 const Home: React.FC = () => {
   const [tempEmail, setTempEmail] = useState<string | null>(null);
@@ -42,9 +42,9 @@ const Home: React.FC = () => {
           </p>
 
           <div className="hero-actions" style={{ marginBottom: (tempEmail || loading) ? '5rem' : '0' }}>
-            <Link to="/signup" className="btn btn-primary btn-lg" style={{ padding: '1.2rem 3rem', borderRadius: '18px' }}>
+            <SmartLink to="/signup" className="btn btn-primary btn-lg" style={{ padding: '1.2rem 3rem', borderRadius: '18px' }}>
               Create Account <ArrowRight size={20} />
-            </Link>
+            </SmartLink>
             <button
               onClick={generatePreview}
               className="btn btn-secondary btn-lg"
@@ -112,9 +112,9 @@ const Home: React.FC = () => {
                 </div>
 
                 <div style={{ marginTop: '3.5rem' }}>
-                  <Link to="/signup" className="btn btn-primary" style={{ width: '100%', padding: '1.2rem', fontSize: '1.1rem', borderRadius: '16px' }}>
+                  <SmartLink to="/signup" className="btn btn-primary" style={{ width: '100%', padding: '1.2rem', fontSize: '1.1rem', borderRadius: '16px' }}>
                     Secure This Relay Permanently <ArrowRight size={20} />
-                  </Link>
+                  </SmartLink>
                 </div>
               </div>
             </motion.div>
@@ -229,9 +229,9 @@ const Home: React.FC = () => {
                   </li>
                 ))}
               </ul>
-              <Link to="/signup" className={`btn ${plan.popular ? 'btn-primary' : 'btn-secondary'}`} style={{ width: '100%', fontSize: '1rem' }}>
+              <SmartLink to="/signup" className={`btn ${plan.popular ? 'btn-primary' : 'btn-secondary'}`} style={{ width: '100%', fontSize: '1rem' }}>
                 {plan.btn}
-              </Link>
+              </SmartLink>
             </motion.div>
           ))}
         </div>

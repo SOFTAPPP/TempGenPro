@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import SmartLink from './SmartLink';
 import { Mail, MessageSquare } from 'lucide-react';
 import Logo from './Logo';
 
@@ -12,8 +12,8 @@ const Footer: React.FC = () => {
         </div>
 
         <div className="footer-links" style={{ display: 'flex', justifyContent: 'center', gap: '2rem', marginBottom: '2rem', flexWrap: 'wrap' }}>
-          <Link to="/privacy" className="nav-link" style={{ fontSize: '0.85rem' }}>Privacy Policy</Link>
-          <Link to="/terms" className="nav-link" style={{ fontSize: '0.85rem' }}>Terms of Service</Link>
+          <SmartLink to="/privacy" className="nav-link" style={{ fontSize: '0.85rem' }}>Privacy Policy</SmartLink>
+          <SmartLink to="/terms" className="nav-link" style={{ fontSize: '0.85rem' }}>Terms of Service</SmartLink>
           <a href="mailto:aritradatt39@gmail.com" className="nav-link" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem' }}>
             <Mail size={14} /> Support
           </a>

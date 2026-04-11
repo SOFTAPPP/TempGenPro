@@ -154,6 +154,11 @@ const Inbox: React.FC = () => {
     return () => clearInterval(timer);
   }, [fetchEmails]);
 
+  const selectedEmailRef = React.useRef(selectedEmail);
+  useEffect(() => {
+    selectedEmailRef.current = selectedEmail;
+  }, [selectedEmail]);
+
   // ⚡ Global Socket Connection
   useEffect(() => {
     if (user) {
@@ -164,6 +169,7 @@ const Inbox: React.FC = () => {
       updateStatus();
 
       socketService.onGlobalEmail(({ email }) => {
+        // ⚡ Update the sidebar counts instantly
         setEmails(prevEmails =>
           prevEmails.map(e =>
             e.email === email
@@ -171,6 +177,11 @@ const Inbox: React.FC = () => {
               : e
           )
         );
+
+        // ⚡ Show a Toast Notification if it's not the currently active email
+        if (selectedEmailRef.current?.email !== email) {
+          showNotification(`New Packet Received: ${email}`, 'success');
+        }
       });
 
       return () => {
@@ -180,6 +191,17 @@ const Inbox: React.FC = () => {
       };
     }
   }, [user]);
+
+  // 🔄 Smart Polling Fallback (Backup for Socket Connectivity)
+  useEffect(() => {
+    if (selectedEmail && socketStatus !== 'connected') {
+      const pollInterval = setInterval(() => {
+        console.log('[Polling] Socket offline, fetching latest packets...');
+        fetchMessages(selectedEmail.id, true);
+      }, 15000); // 15s poll when disconnected
+      return () => clearInterval(pollInterval);
+    }
+  }, [selectedEmail, socketStatus, fetchMessages]);
 
   // ⚡ Specific Inbox Socket
   useEffect(() => {

@@ -11,6 +11,10 @@ export interface AuthRequest extends Request {
 
 import prisma from '../utils/prisma.js';
 
+// Simple in-memory cache for banned status to avoid DB query on every single request
+const banCache = new Map<number, { isBanned: boolean, timestamp: number }>();
+const BAN_CACHE_TTL = 30000; // 30 seconds
+
 export const authenticateToken = async (req: AuthRequest, res: Response, next: NextFunction) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
@@ -20,13 +24,23 @@ export const authenticateToken = async (req: AuthRequest, res: Response, next: N
   try {
     const verified = jwt.verify(token, process.env.JWT_SECRET || 'secret') as { id: number; username: string; role: string };
 
-    // Check if user is banned
-    const user = await prisma.user.findUnique({
-      where: { id: verified.id },
-      select: { isBanned: true } as any
-    });
+    // Check cache first
+    const cached = banCache.get(verified.id);
+    let isBanned = false;
 
-    if ((user as any)?.isBanned) {
+    if (cached && (Date.now() - cached.timestamp < BAN_CACHE_TTL)) {
+      isBanned = cached.isBanned;
+    } else {
+      // Check DB and update cache
+      const user = await prisma.user.findUnique({
+        where: { id: verified.id },
+        select: { isBanned: true } as any
+      });
+      isBanned = !!(user as any)?.isBanned;
+      banCache.set(verified.id, { isBanned, timestamp: Date.now() });
+    }
+
+    if (isBanned) {
       return res.status(403).json({ error: 'Your account has been suspended for violating our terms and conditions.' });
     }
 

@@ -16,7 +16,12 @@ export const register = async (req: Request, res: Response) => {
     }
 
     const existingUser = await prisma.user.findFirst({
-      where: { OR: [{ username }, { email }] }
+      where: { 
+        OR: [
+          { username: { equals: username, mode: 'insensitive' } }, 
+          { email: { equals: email, mode: 'insensitive' } }
+        ] 
+      }
     });
 
     if (existingUser) {
@@ -49,6 +54,7 @@ export const login = async (req: Request, res: Response) => {
     const cleanIdentifier = identifier.trim().toLowerCase();
     const cleanPassword = password.trim();
 
+    console.log(`[Login Attempt] Identifier: "${cleanIdentifier}"`);
     const user = await prisma.user.findFirst({
       where: {
         OR: [
@@ -59,6 +65,7 @@ export const login = async (req: Request, res: Response) => {
     });
 
     if (!user) {
+      console.log(`[Login Failed] User not found for: "${cleanIdentifier}"`);
       return res.status(400).json({ error: 'User not found' });
     }
 

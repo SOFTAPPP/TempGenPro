@@ -7,15 +7,18 @@ export default defineConfig({
   build: {
     target: 'esnext',
     cssMinify: true,
+    cssCodeSplit: true,
+    reportCompressedSize: false,
+    chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
-            if (id.includes('framer-motion')) return 'framer-motion';
-            if (id.includes('lucide-react')) return 'lucide';
-            if (id.includes('axios')) return 'axios';
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) return 'vendor';
-            return 'core';
+            if (id.includes('framer-motion')) return 'vendor-framer';
+            if (id.includes('lucide-react')) return 'vendor-lucide';
+            if (id.includes('react')) return 'vendor-react';
+            if (id.includes('axios')) return 'vendor-axios';
+            return 'vendor-others';
           }
         }
       }

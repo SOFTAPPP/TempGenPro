@@ -3,8 +3,8 @@ module.exports = {
     {
       name: "tempgenpro-server",
       script: "./server/dist/index.js",
-      instances: "max",
-      exec_mode: "cluster",
+      instances: 1,
+      exec_mode: "fork",
       env: {
         NODE_ENV: "production",
         PORT: 5002
