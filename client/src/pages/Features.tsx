@@ -6,32 +6,32 @@ import { Link } from 'react-router-dom';
 const Features: React.FC = () => {
   const mainFeatures = [
     {
-      icon: <Shield size={32} />,
-      title: "Top-Tier Privacy",
-      desc: "All incoming emails are automatically deleted after 24 hours. We never log your real IP address or personal data.",
+      icon: <Cpu size={32} />,
+      title: "Synthetic Persona",
+      desc: "Deploy relay nodes with high-fidelity AI-generated identities including names, professional roles, and avatars to maximize signup success rates.",
       color: "var(--primary)"
     },
     {
-      icon: <Zap size={32} />,
-      title: "Real-time Delivery",
-      desc: "Our high-speed infrastructure ensures emails arrive in your temp inbox in less than 200ms—faster than a blink.",
+      icon: <Shield size={32} />,
+      title: "AI Camouflage",
+      desc: "Engage the Noise Engine to simulate organic background activity and background traffic, bypassing aggressive behavioral bot detection patterns.",
       color: "#8eb5ee"
     },
     {
-      icon: <Mail size={32} />,
-      title: "Catch-All Support",
-      desc: "Receive emails sent to ANY address on our domain. Perfect for testing signup flows or bypassing address-specific limits.",
+      icon: <Zap size={32} />,
+      title: "Privacy Shield",
+      desc: "Our advanced De-Tracker technology automatically purges spy pixels and tracking parameters (UTMs) from incoming packets in real-time.",
       color: "#ffffff"
     }
   ];
 
   const secondaryFeatures = [
-    { icon: <Cpu />, title: "Auto-OTP Extraction", desc: "Our AI automatically finds and highlights verification codes for you." },
-    { icon: <Globe />, title: "Global DNS", desc: "Ultra-low latency delivery via Cloudflare's global edge network." },
-    { icon: <Lock />, title: "End-to-End Encryption", desc: "Your temp inboxes are protected with industry-standard SSL." },
-    { icon: <Server />, title: "Dedicated Infrastructure", desc: "Running on high-performance Hostinger VPS for 99.9% uptime." },
-    { icon: <Smartphone />, title: "Mobile Optimized", desc: "A flawless experience across desktop, tablet, and mobile devices." },
-    { icon: <CheckCircle />, title: "No Registration", desc: "Use basic features instantly without ever having to create an account." }
+    { icon: <Lock />, title: "256-bit Interception", desc: "Military-grade encryption protocols protect every data transmission through our secure relay tunnels." },
+    { icon: <Mail />, title: "Catch-All Pipelines", desc: "Monitor entire domains with interceptor-grade catch-all support, ensuring no transmission goes undetected." },
+    { icon: <Globe />, title: "Global Edge Network", desc: "Ultra-low latency delivery via distributed interceptor nodes across Cloudflare's global edge network." },
+    { icon: <Smartphone />, title: "Mobile Optimized", desc: "A flawless, responsive terminal experience across desktop, tablet, and mobile devices." },
+    { icon: <CheckCircle />, title: "Zero Log Policy", desc: "We operate on a strict zero-log infrastructure. Your temporary communications remain private and untraceable." },
+    { icon: <Server />, title: "Dedicated Architecture", desc: "Running on high-performance infrastructure for 99.9% uptime and near-instant packet delivery." }
   ];
 
   return (
