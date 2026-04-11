@@ -20,7 +20,7 @@ const Home: React.FC = () => {
 
   return (
     <div className="container">
-      <SEO 
+      <SEO
         title="TempGenPro | Elite Temporary Email & Anonymous Relay"
         description="Ghost your digital footprint with the most advanced temporary email system. Generate anonymous emails and virtual numbers for secure social media signups."
         keywords="temporary email, anonymous mail, temp mail, disposable email address, virtual whatsapp numbers, test email, verify social media"
@@ -191,14 +191,14 @@ const Home: React.FC = () => {
             },
             {
               name: "Premium",
-              price: "9",
+              price: "4",
               features: ["10 Active Inboxes", "7-Day History", "Priority Support", , "Faster Delivery"],
               btn: "Go Premium",
               popular: true
             },
             {
               name: "Business",
-              price: "29",
+              price: "24",
               features: ["25 Active Inboxes", "Permanent Addresses", "Custom Domains", "Direct Support", "API Access"],
               btn: "Scale Now",
               popular: false
@@ -269,12 +269,12 @@ const Home: React.FC = () => {
               a: "Coming soon is our 'Permanent Virtual Number' system. Until then, our 'Temporary Email' relay system is the most secure way to handle anonymous account creations and digital interactions."
             }
           ].map((item, i) => (
-            <motion.div 
-              key={i} 
+            <motion.div
+              key={i}
               initial={{ opacity: 0, x: i % 2 === 0 ? -20 : 20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              className="card glass" 
+              className="card glass"
               style={{ padding: '2.5rem', borderLeft: '3px solid var(--primary)' }}
             >
               <h4 style={{ fontSize: '1.25rem', fontWeight: 900, marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
