@@ -37,7 +37,7 @@ const Home: React.FC = () => {
             <span>THE ELITE TEMPORARY RELAY SYSTEM</span>
           </div>
 
-          <h1 className="hero-title" style={{ fontSize: 'clamp(3rem, 8vw, 6rem)', lineHeight: 0.9, marginBottom: '2rem' }}>
+          <h1 className="hero-title" style={{ fontSize: 'clamp(1.8rem, 8vw, 6rem)', lineHeight: 1, marginBottom: '2rem' }}>
             Ghost Your <br />
             <span className="gradient-text">Digital Footprint.</span>
           </h1>
@@ -180,7 +180,7 @@ const Home: React.FC = () => {
           <p style={{ color: 'var(--text-muted)', fontSize: '1.25rem' }}>Choose the plan that best fits your privacy needs.</p>
         </div>
 
-        <div className="pricing-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
+        <div className="pricing-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: '2rem' }}>
           {[
             {
               name: "Free Basics",
@@ -250,7 +250,7 @@ const Home: React.FC = () => {
           <p style={{ color: 'var(--text-muted)', fontSize: '1.2rem' }}>Everything you need to know about disposable email and privacy tech.</p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '2.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 400px), 1fr))', gap: '2.5rem' }}>
           {[
             {
               q: "What is a Temporary Email Generator?",
@@ -296,8 +296,8 @@ const Home: React.FC = () => {
           style={{
             background: 'linear-gradient(135deg, rgba(182, 139, 245, 0.08) 0%, rgba(0,0,0,0) 100%)',
             border: '2px solid rgba(182, 139, 245, 0.2)',
-            padding: '5rem',
-            borderRadius: '48px',
+            padding: 'clamp(2rem, 5vw, 5rem)',
+            borderRadius: 'clamp(24px, 5vw, 48px)',
             position: 'relative'
           }}
         >
@@ -311,7 +311,7 @@ const Home: React.FC = () => {
             <div className="badge" style={{ marginBottom: '1.5rem', background: 'rgba(182, 139, 245, 0.1)', color: 'var(--primary)' }}>
               <span>Q3 2026</span>
             </div>
-            <h2 style={{ fontSize: '4.5rem', fontWeight: 900, marginBottom: '1.5rem', letterSpacing: '-0.03em' }}>
+            <h2 style={{ fontSize: 'clamp(2rem, 8vw, 4.5rem)', fontWeight: 900, marginBottom: '1.5rem', letterSpacing: '-0.03em' }}>
               The Future of <span className="gradient-text">Elite Privacy.</span>
             </h2>
             <p style={{ fontSize: '1.25rem', color: 'var(--text-muted)', marginBottom: '4rem', lineHeight: 1.6 }}>

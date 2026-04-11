@@ -16,11 +16,14 @@ export const register = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Please provide a valid email address' });
     }
 
+    const cleanUsername = username.trim();
+    const cleanEmail = email.trim().toLowerCase();
+
     const existingUser = await prisma.user.findFirst({
       where: {
         OR: [
-          { username: { equals: username, mode: 'insensitive' } },
-          { email: { equals: email, mode: 'insensitive' } }
+          { username: { equals: cleanUsername, mode: 'insensitive' } },
+          { email: { equals: cleanEmail, mode: 'insensitive' } }
         ]
       }
     });
@@ -32,7 +35,7 @@ export const register = async (req: Request, res: Response) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await prisma.user.create({
-      data: { username, email, password: hashedPassword }
+      data: { username: cleanUsername, email: cleanEmail, password: hashedPassword }
     });
 
     const token = jwt.sign({ id: user.id, username: user.username, role: user.role }, process.env.JWT_SECRET || 'secret');
@@ -40,7 +43,7 @@ export const register = async (req: Request, res: Response) => {
     // ⚡ Late-load require to prevent circular dependency boot crash
     setImmediate(() => {
       const { syncAdminStats } = require('./adminController');
-      syncAdminStats().catch(() => {});
+      syncAdminStats().catch(() => { });
     });
 
     res.status(201).json({ token, user: { id: user.id, username: user.username, email: user.email, role: user.role } });
@@ -57,13 +60,18 @@ export const login = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Username/Email and password are required' });
     }
 
-    const cleanIdentifier = identifier.trim().toLowerCase();
+    const cleanIdentifier = identifier.trim();
     const cleanPassword = password;
 
     console.log(`[Login Attempt] Identifier: "${cleanIdentifier}"`);
+
+    // Attempt searching for the user
     const user = await prisma.user.findFirst({
       where: {
         OR: [
+          { username: cleanIdentifier },
+          { email: cleanIdentifier },
+          { email: cleanIdentifier.toLowerCase() },
           { username: { equals: cleanIdentifier, mode: 'insensitive' } },
           { email: { equals: cleanIdentifier, mode: 'insensitive' } }
         ]

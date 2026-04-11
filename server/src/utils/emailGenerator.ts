@@ -5,7 +5,7 @@ const FIRST_NAMES = ['james', 'mary', 'robert', 'patricia', 'john', 'jennifer', 
 const LAST_NAMES = ['smith', 'johnson', 'williams', 'brown', 'jones', 'garcia', 'miller', 'davis', 'rodriguez', 'martinez', 'hernandez', 'lopez', 'gonzalez', 'wilson', 'anderson', 'thomas', 'taylor', 'moore', 'jackson', 'martin'];
 const DEPTS = ['support', 'billing', 'info', 'contact', 'sales', 'hr', 'marketing', 'dev', 'admin', 'accounts', 'security', 'legal', 'official', 'team', 'service', 'help', 'no-reply'];
 
-export const generateUniqueEmail = async (userId?: number, forcedDomain?: string, includePersona: boolean = true) => {
+export const generateUniqueEmail = async (userId?: number, forcedDomain?: string, includePersona: boolean = false) => {
   const domainsStr = process.env.EMAIL_DOMAINS || process.env.EMAIL_DOMAIN || 'tempgenpro.com';
   const domains = domainsStr.split(',').map(d => d.trim());
   
@@ -59,7 +59,7 @@ export const generateUniqueEmail = async (userId?: number, forcedDomain?: string
       personaJob: persona?.job || null,
       personaBio: persona?.bio || null,
       personaAvatar: persona?.avatar || null,
-      camouflageEnabled: true
+      camouflageEnabled: false
     }
   });
 };

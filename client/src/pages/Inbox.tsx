@@ -87,7 +87,7 @@ const Inbox: React.FC = () => {
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [msgLoading, setMsgLoading] = useState(false);
-  const [usePersona, setUsePersona] = useState(true);
+  const [usePersona, setUsePersona] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showMobileMessages, setShowMobileMessages] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -685,29 +685,30 @@ const Inbox: React.FC = () => {
                     <span style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Active Tunnel Pipeline</span>
                   </div>
                   </div>
-                    <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
                       <button 
                         onClick={() => handleToggleCamouflage(selectedEmail.id)} 
                         className={`btn btn-sm ${selectedEmail.camouflageEnabled ? 'btn-primary' : 'btn-secondary'}`}
                         style={{ 
                           borderRadius: '10px', 
-                          padding: '0.5rem 1rem',
+                          padding: '0.5rem 0.75rem',
                           background: selectedEmail.camouflageEnabled ? 'var(--primary)' : 'rgba(255,255,255,0.05)',
                           color: selectedEmail.camouflageEnabled ? '#000' : 'var(--text-muted)',
-                          marginRight: '0.5rem',
                           display: 'flex',
                           alignItems: 'center',
                           gap: '6px',
-                          fontSize: '0.7rem',
-                          fontWeight: 900
+                          fontSize: '0.65rem',
+                          fontWeight: 900,
+                          minWidth: 'fit-content'
                         }}
                         title={selectedEmail.camouflageEnabled ? 'AI Noise Active' : 'Engage Camouflage'}
                       >
                         {selectedEmail.camouflageEnabled ? <Zap size={14} fill="currentColor" /> : <Ghost size={14} />}
-                        {selectedEmail.camouflageEnabled ? 'CAMOUFLAGE: ON' : 'CAMOUFLAGE: OFF'}
+                        <span className="mobile-hidden">CAMOUFLAGE: {selectedEmail.camouflageEnabled ? 'ON' : 'OFF'}</span>
+                        <span className="mobile-visible">CAMO: {selectedEmail.camouflageEnabled ? 'ON' : 'OFF'}</span>
                       </button>
-                      <button onClick={() => copyToClipboard(selectedEmail.email)} className="btn btn-nav-round btn-copy" title="Copy Address"><Copy size={16} /></button>
-                      <button onClick={() => fetchMessages(selectedEmail.id)} className="btn btn-nav-round btn-refresh" title="Refresh List"><RefreshCw size={16} className={msgLoading ? 'animate-spin' : ''} /></button>
+                      <button onClick={() => copyToClipboard(selectedEmail.email)} className="btn btn-nav-round btn-copy" style={{ width: '34px', height: '34px' }} title="Copy Address"><Copy size={14} /></button>
+                      <button onClick={() => fetchMessages(selectedEmail.id)} className="btn btn-nav-round btn-refresh" style={{ width: '34px', height: '34px' }} title="Refresh List"><RefreshCw size={14} className={msgLoading ? 'animate-spin' : ''} /></button>
                     </div>
                 </div>
 

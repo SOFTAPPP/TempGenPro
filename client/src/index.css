@@ -81,13 +81,20 @@ body {
   line-height: 1.6;
   min-height: 100vh;
   overflow-x: hidden;
+  width: 100%;
+  position: relative;
 }
 
 .container {
-  max-width: 1400px;
+  max-width: 1280px;
   margin: 0 auto;
   padding: 0 1.5rem;
   width: 100%;
+}
+@media (max-width: 768px) {
+  .container {
+    padding: 0 1rem;
+  }
 }
 
 .nav.scrolled {
@@ -184,12 +191,6 @@ input:focus+.input-icon {
 
 
 /* Layout Helpers */
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 2rem;
-  width: 100%;
-}
 
 .app-container {
   display: flex;
@@ -814,15 +815,20 @@ main {
 }
 
 @media (max-width: 640px) {
+  .container {
+    padding: 0 1rem !important;
+  }
+
   .hero-section {
-    padding-top: 8rem !important;
-    padding-bottom: 4rem !important;
+    padding-top: 6rem !important;
+    padding-bottom: 3rem !important;
   }
 
   .hero-actions {
     flex-direction: column;
     align-items: center;
     gap: 1rem;
+    padding: 0 1rem;
   }
 
   .hero-actions .btn {
@@ -830,14 +836,16 @@ main {
   }
 
   .hero-title {
-    font-size: 2.5rem !important;
-    margin-bottom: 1.5rem;
+    font-size: 2.2rem !important;
+    line-height: 1.1 !important;
+    margin-bottom: 1.25rem;
   }
 
   .hero-subtitle {
-    font-size: 1rem !important;
-    padding: 0 1rem;
-    margin-bottom: 2.5rem;
+    font-size: 0.95rem !important;
+    padding: 0 !important;
+    margin-bottom: 2.5rem !important;
+    line-height: 1.5 !important;
   }
 
   .preview-card {

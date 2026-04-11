@@ -39,7 +39,7 @@ const Logo: React.FC<LogoProps> = ({ size = 24, iconSize, showText = false }) =>
           }}
         />
       </div>
-      {showText && <span className="logo-text gradient-text" style={{ fontSize: '1.6rem', fontWeight: 900 }}>TempGenPro</span>}
+      {showText && <span className="logo-text gradient-text" style={{ fontSize: 'clamp(1.2rem, 4vw, 1.6rem)', fontWeight: 900 }}>TempGenPro</span>}
     </div>
   );
 };

@@ -37,7 +37,7 @@ const Features: React.FC = () => {
 
   return (
     <div className="container" style={{ padding: '6rem 0' }}>
-      <SEO 
+      <SEO
         title="Privacy Features | Elite Anonymity Tools | TempGenPro"
         description="Explore advanced privacy features like Synthetic Personas, AI Camouflage Noise Engine, and Privacy Shield. Protect your identity with state-of-the-art relay systems."
         keywords="ai persona, ai camouflage, noise engine, de-tracker, privacy shield, anonymous signup features"
@@ -88,7 +88,7 @@ const Features: React.FC = () => {
       <section className="card" style={{ padding: '4rem', marginBottom: '8rem', border: '1px solid var(--border)', background: 'var(--bg-secondary)', borderRadius: '32px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '3rem', textAlign: 'center' }}>
           <div>
-            <h2 style={{ fontSize: '3.5rem', fontWeight: 800, color: 'var(--primary)', marginBottom: '0.5rem' }}>50M+</h2>
+            <h2 style={{ fontSize: '3.5rem', fontWeight: 800, color: 'var(--primary)', marginBottom: '0.5rem' }}>10M+</h2>
             <p style={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.85rem', letterSpacing: '0.1em', color: 'var(--text-muted)' }}>Emails Processed</p>
           </div>
           <div>

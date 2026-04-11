@@ -11,11 +11,6 @@ const NOISE_TEMPLATES = [
     sender: "billing-noreply@saas-managed-infra.com",
     subject: "Monthly Usage Statement: Zero Usage Alert",
     body: "Hello User,\n\nYour account has been active for 24 hours with zero resource consumption. This is just a courtesy notification to ensure your relay tunnels are functioning as expected.\n\nView Dashboard: https://saas-managed-infra.com/dashboard\n\nSupport Team"
-  },
-  {
-    sender: "security@global-p2p.net",
-    subject: "Security Advisory: Node Reputation Signal",
-    body: "Warning: Your recent node deployment at tempgenpro.com has been verified as SECURE.\n\nNo vulnerabilities detected. Your encryption protocols are up to date.\n\nSecurity Audit: https://global-p2p.net/integrity-check-2938\n\nGlobal P2P Security"
   }
 ];
 

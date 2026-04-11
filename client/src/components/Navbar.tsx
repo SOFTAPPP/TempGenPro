@@ -172,39 +172,58 @@ const Navbar: React.FC = () => {
                 </button>
               </div>
 
-              {/* Drawer Links */}
-              <nav style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', flex: 1 }}>
-                {[
-                  { to: '/', label: 'Home' },
-                  { to: '/features', label: 'Features' },
-                  { to: '/privacy', label: 'Privacy Policy' },
-                  { to: '/terms', label: 'Terms' },
-                  ...(isAuthenticated && user?.role === 'ADMIN' ? [{ to: '/admin', label: 'Admin Dashboard' }] : []),
-                  ...(isAuthenticated ? [{ to: '/inbox', label: 'Inbox' }, { to: '/profile', label: 'Profile' }] : []),
-                  ...(!isAuthenticated ? [{ to: '/login', label: 'Login' }] : []),
-                ].map(link => (
-                  <SmartLink
-                    key={link.to}
-                    to={link.to}
-                    onClick={() => setMobileMenuOpen(false)}
-                    style={{
-                      padding: '0.9rem 1.25rem',
-                      borderRadius: '12px',
-                      fontWeight: 600,
-                      fontSize: '1rem',
-                      color: location.pathname === link.to ? 'var(--primary)' : 'var(--text)',
-                      background: location.pathname === link.to ? 'rgba(182, 139, 245, 0.08)' : 'transparent',
-                      border: location.pathname === link.to ? '1px solid rgba(182, 139, 245, 0.15)' : '1px solid transparent',
-                      transition: 'all 0.2s ease',
-                      display: 'block',
-                    }}
-                  >
-                    {link.label}
-                  </SmartLink>
-                ))}
+              {/* Drawer Content Area */}
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+                {/* Scrollable Links Section */}
+                <nav style={{ 
+                  padding: '1.5rem', 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  gap: '0.5rem', 
+                  flex: 1, 
+                  overflowY: 'auto',
+                  scrollbarWidth: 'none',
+                  msOverflowStyle: 'none'
+                }}>
+                  {[
+                    { to: '/', label: 'Home' },
+                    { to: '/features', label: 'Features' },
+                    { to: '/privacy', label: 'Privacy Policy' },
+                    { to: '/terms', label: 'Terms' },
+                    ...(isAuthenticated && user?.role === 'ADMIN' ? [{ to: '/admin', label: 'Admin Dashboard' }] : []),
+                    ...(isAuthenticated ? [{ to: '/inbox', label: 'Inbox' }, { to: '/profile', label: 'Profile' }] : []),
+                    ...(!isAuthenticated ? [{ to: '/login', label: 'Login' }] : []),
+                  ].map(link => (
+                    <SmartLink
+                      key={link.to}
+                      to={link.to}
+                      onClick={() => setMobileMenuOpen(false)}
+                      style={{
+                        padding: '0.9rem 1.25rem',
+                        borderRadius: '12px',
+                        fontWeight: 600,
+                        fontSize: '1rem',
+                        color: location.pathname === link.to ? 'var(--primary)' : 'var(--text)',
+                        background: location.pathname === link.to ? 'rgba(182, 139, 245, 0.08)' : 'transparent',
+                        border: location.pathname === link.to ? '1px solid rgba(182, 139, 245, 0.15)' : '1px solid transparent',
+                        transition: 'all 0.2s ease',
+                        display: 'block',
+                      }}
+                    >
+                      {link.label}
+                    </SmartLink>
+                  ))}
+                </nav>
 
-                {/* Auth Buttons */}
-                <div style={{ marginTop: 'auto', paddingTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                {/* Fixed Bottom Footer Section */}
+                <div style={{ 
+                  padding: '1.5rem', 
+                  borderTop: '1px solid var(--border)',
+                  background: 'rgba(255,255,255,0.02)',
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  gap: '0.75rem' 
+                }}>
                   {isAuthenticated ? (
                     <button
                       onClick={handleLogout}
@@ -224,7 +243,7 @@ const Navbar: React.FC = () => {
                     </SmartLink>
                   )}
                 </div>
-              </nav>
+              </div>
             </motion.div>
           </>
         )}

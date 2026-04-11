@@ -106,7 +106,10 @@ export const updateUser = async (req: Request, res: Response) => {
   try {
     const user = await prisma.user.update({
       where: { id: parseInt(id as string) },
-      data: { username, email }
+      data: { 
+        username: username?.trim(), 
+        email: email?.trim().toLowerCase() 
+      }
     });
     res.json(user);
   } catch (error) {

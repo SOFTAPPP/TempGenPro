@@ -14,16 +14,20 @@ setInterval(() => {
 }, 10 * 60 * 1000);
 
 export const visitorLogger = (req: Request, res: Response, next: NextFunction) => {
-  // ⚡ Only log real page/frontend navigations — skip API, health, socket.io
   const path = req.path;
   const shouldSkip =
     path === '/health' ||
-    path.startsWith('/api/') ||
     path.startsWith('/socket.io') ||
     path.startsWith('/uploads/');
 
   if (!shouldSkip) {
-    const ip = ((req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress || 'unknown').split(',')[0].trim();
+    // ⚡ Capture Both: Store both the cleaned IPv4 and the raw mapped signature for the audit log
+    const rawIp = (req.ip || (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress || 'unknown').split(',')[0].trim();
+    const cleanIp = rawIp.startsWith('::ffff:') ? rawIp.substring(7) : rawIp;
+    
+    // If it's pure IPv4, force the mapped version for the "Both" view. If native IPv6, just show the one.
+    const ip = !cleanIp.includes(':') ? `${cleanIp}, ::ffff:${cleanIp}` : cleanIp;
+    
     const now = Date.now();
     const lastLogged = ipThrottleMap.get(ip);
 

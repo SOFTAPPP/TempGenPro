@@ -185,11 +185,6 @@ export const toggleCamouflage = async (req: AuthRequest, res: Response) => {
       data: { camouflageEnabled: !emailNode.camouflageEnabled }
     });
 
-    if (updated.camouflageEnabled) {
-      // ⚡ Instant manifesting: Trigger one noise packet immediately
-      generateNoiseForEmail(updated.id, updated.email, updated.userId).catch(() => {});
-    }
-
     res.json(updated);
   } catch (error) {
     res.status(500).json({ error: 'Server error' });
