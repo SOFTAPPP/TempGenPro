@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Shield, Zap, Mail, Copy, Star, ArrowRight, MessageSquare, Globe } from 'lucide-react';
+import { Shield, Zap, Mail, Copy, Star, ArrowRight, MessageSquare, Globe, HelpCircle } from 'lucide-react';
 import SmartLink from '../components/SmartLink';
+import SEO from '../components/SEO';
 
 const Home: React.FC = () => {
   const [tempEmail, setTempEmail] = useState<string | null>(null);
@@ -19,6 +20,11 @@ const Home: React.FC = () => {
 
   return (
     <div className="container">
+      <SEO 
+        title="TempGenPro | Elite Temporary Email & Anonymous Relay"
+        description="Ghost your digital footprint with the most advanced temporary email system. Generate anonymous emails and virtual numbers for secure social media signups."
+        keywords="temporary email, anonymous mail, temp mail, disposable email address, virtual whatsapp numbers, test email, verify social media"
+      />
       {/* Hero Section */}
       <section className="hero-section" style={{ paddingTop: 'clamp(8rem, 15vh, 12rem)', paddingBottom: '3rem', textAlign: 'center' }}>
         <motion.div
@@ -232,6 +238,49 @@ const Home: React.FC = () => {
               <SmartLink to="/signup" className={`btn ${plan.popular ? 'btn-primary' : 'btn-secondary'}`} style={{ width: '100%', fontSize: '1rem' }}>
                 {plan.btn}
               </SmartLink>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
+      {/* 🧩 SEO Section: Frequently Asked Questions */}
+      <section style={{ padding: '8rem 0' }}>
+        <div style={{ textAlign: 'center', marginBottom: '5rem' }}>
+          <h2 style={{ fontSize: '3.5rem', fontWeight: 900, marginBottom: '1.25rem' }}>Searcher <span className="gradient-text">Insights</span></h2>
+          <p style={{ color: 'var(--text-muted)', fontSize: '1.2rem' }}>Everything you need to know about disposable email and privacy tech.</p>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '2.5rem' }}>
+          {[
+            {
+              q: "What is a Temporary Email Generator?",
+              a: "A temporary email generator provides disposable email addresses that self-destruct after a specific time. TempGenPro is the premium standard for high-performance, anonymous inboxes used to bypass social media trackers and avoid marketing spam."
+            },
+            {
+              q: "How does 10 Minute Mail work for verification?",
+              a: "When you use our '10 minute mail' style nodes, you get an instant endpoint to receive verification codes (OTPs) from services like Netflix or Facebook. They're perfect for one-time account activations where you don't want to use your real identity."
+            },
+            {
+              q: "Is Temp Mail safe for social media signups?",
+              a: "Yes. Our 'Temp Mail' system uses high-reputation relay domains (Social-Ready Relays) and AI Personas. This means services perceive your disposable account as a real, organic human user rather than a bot."
+            },
+            {
+              q: "Can I get a Temporary Number for WhatsApp?",
+              a: "Coming soon is our 'Permanent Virtual Number' system. Until then, our 'Temporary Email' relay system is the most secure way to handle anonymous account creations and digital interactions."
+            }
+          ].map((item, i) => (
+            <motion.div 
+              key={i} 
+              initial={{ opacity: 0, x: i % 2 === 0 ? -20 : 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="card glass" 
+              style={{ padding: '2.5rem', borderLeft: '3px solid var(--primary)' }}
+            >
+              <h4 style={{ fontSize: '1.25rem', fontWeight: 900, marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <HelpCircle size={20} color="var(--primary)" /> {item.q}
+              </h4>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', lineHeight: 1.8 }}>{item.a}</p>
             </motion.div>
           ))}
         </div>

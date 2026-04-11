@@ -1,4 +1,5 @@
 import React, { lazy, Suspense } from 'react';
+import { HelmetProvider } from 'react-helmet-async';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AuthProvider } from './context/AuthContext';
@@ -77,17 +78,19 @@ const AppContent: React.FC = () => {
     </div>
   );
 };
-
 const App: React.FC = () => {
+  const HelmetProviderSafe = HelmetProvider as any;
   return (
-    <Router>
-      <ScrollToTop />
-      <NotificationProvider>
-        <AuthProvider>
-          <AppContent />
-        </AuthProvider>
-      </NotificationProvider>
-    </Router>
+    <HelmetProviderSafe>
+      <Router>
+        <ScrollToTop />
+        <NotificationProvider>
+          <AuthProvider>
+            <AppContent />
+          </AuthProvider>
+        </NotificationProvider>
+      </Router>
+    </HelmetProviderSafe>
   );
 };
 

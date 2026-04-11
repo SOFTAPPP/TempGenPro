@@ -1,0 +1,17 @@
+# 🤖 TempGenPro Robots.txt
+User-agent: *
+Allow: /
+Allow: /features
+Allow: /privacy
+Allow: /terms
+
+# Disallow Private Areas (Auth-gated)
+Disallow: /inbox
+Disallow: /profile
+Disallow: /admin
+Disallow: /deleted
+Disallow: /suspended
+
+# Host and Sitemap
+Host: https://tempgenpro.com
+Sitemap: https://tempgenpro.com/sitemap.xml

@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Shield, Zap, Mail, Server, Smartphone, Globe, Lock, Cpu, CheckCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import SEO from '../components/SEO';
 
 const Features: React.FC = () => {
   const mainFeatures = [
@@ -36,6 +37,11 @@ const Features: React.FC = () => {
 
   return (
     <div className="container" style={{ padding: '6rem 0' }}>
+      <SEO 
+        title="Privacy Features | Elite Anonymity Tools | TempGenPro"
+        description="Explore advanced privacy features like Synthetic Personas, AI Camouflage Noise Engine, and Privacy Shield. Protect your identity with state-of-the-art relay systems."
+        keywords="ai persona, ai camouflage, noise engine, de-tracker, privacy shield, anonymous signup features"
+      />
       {/* Hero Section */}
       <section style={{ textAlign: 'center', marginBottom: '8rem' }}>
         <motion.h1
