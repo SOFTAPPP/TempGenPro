@@ -512,7 +512,7 @@ const Inbox: React.FC = () => {
                   </button>
                 </div>
 
-                <div style={{ flex: 1, overflowY: 'auto', padding: '4rem 2rem' }}>
+              <div className="inbox-msg-detail-body" style={{ flex: 1, overflowY: 'auto', padding: '4rem 2rem' }}>
                   <div style={{ maxWidth: '850px', margin: '0 auto' }}>
                     <h1 style={{ fontSize: '2.5rem', fontWeight: 900, marginBottom: '2.5rem', lineHeight: 1.1, color: 'var(--text-bold)' }}>{selectedMessage.subject}</h1>
 
@@ -535,7 +535,7 @@ const Inbox: React.FC = () => {
                     {selectedMessage.otpCode && (
                       <div className="glass-card" style={{ padding: '2.5rem', borderRadius: '24px', border: '2px solid var(--primary)', marginBottom: '4rem', textAlign: 'center', background: 'rgba(182, 139, 245, 0.03)' }}>
                         <p style={{ fontSize: '0.75rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.3em', marginBottom: '1.5rem', color: 'var(--primary)' }}>SECURITY VERIFICATION CODE</p>
-                        <div style={{ fontSize: '4rem', fontWeight: 900, letterSpacing: '0.4em', fontFamily: 'monospace', color: 'var(--text-bold)', textShadow: '0 0 20px var(--primary-glow)' }}>{selectedMessage.otpCode}</div>
+                        <div className="otp-code-display" style={{ fontSize: '4rem', fontWeight: 900, letterSpacing: '0.4em', fontFamily: 'monospace', color: 'var(--text-bold)', textShadow: '0 0 20px var(--primary-glow)' }}>{selectedMessage.otpCode}</div>
                         <button onClick={() => copyToClipboard(selectedMessage.otpCode || '')} className="btn btn-primary" style={{ marginTop: '2rem', padding: '1rem 3rem', borderRadius: '14px' }}>
                           <Copy size={20} /> COPY CODE
                         </button>
@@ -569,10 +569,10 @@ const Inbox: React.FC = () => {
                     <div className="mobile-hidden" style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'var(--primary-glow)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <Mail size={20} />
                     </div>
-                    <div>
-                      <h2 style={{ fontSize: '1.1rem', fontWeight: 900, margin: 0 }}>{selectedEmail.email}</h2>
-                      <span style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Active Tunnel Pipeline</span>
-                    </div>
+                  <div>
+                    <h2 className="inbox-email-title" style={{ fontSize: '1.1rem', fontWeight: 900, margin: 0 }}>{selectedEmail.email}</h2>
+                    <span style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Active Tunnel Pipeline</span>
+                  </div>
                   </div>
                   <div style={{ display: 'flex', gap: '0.75rem' }}>
                     <button onClick={() => copyToClipboard(selectedEmail.email)} className="btn btn-nav-round btn-copy" title="Copy Address"><Copy size={16} /></button>
@@ -613,14 +613,14 @@ const Inbox: React.FC = () => {
                             gap: '2.5rem'
                           }}
                         >
-                          <div style={{ width: '180px', flexShrink: 0, fontWeight: 900, fontSize: '0.95rem', color: 'var(--text-bold)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          <div className="gmail-row-sender" style={{ width: '180px', flexShrink: 0, fontWeight: 900, fontSize: '0.95rem', color: 'var(--text-bold)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {msg.sender.split('@')[0]}
                           </div>
-                          <div style={{ flex: 1, display: 'flex', gap: '0.75rem', minWidth: 0, alignItems: 'baseline' }}>
+                          <div className="gmail-row-body" style={{ flex: 1, display: 'flex', gap: '0.75rem', minWidth: 0, alignItems: 'baseline' }}>
                             <span style={{ fontWeight: 800, color: 'var(--text-bold)', whiteSpace: 'nowrap', fontSize: '0.95rem' }}>{msg.subject}</span>
                             <span style={{ color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: '0.9rem' }}>- {msg.body.substring(0, 120)}</span>
                           </div>
-                          <div style={{ width: '100px', textAlign: 'right', fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 800, whiteSpace: 'nowrap' }}>
+                          <div className="gmail-row-time" style={{ width: '100px', textAlign: 'right', fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 800, whiteSpace: 'nowrap' }}>
                             {new Date(msg.receivedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </div>
                         </div>

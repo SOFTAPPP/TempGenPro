@@ -288,20 +288,9 @@ main {
   }
 }
 
-/* Mobile Menu */
+/* Mobile Menu — handled via JS drawer in Navbar.tsx */
 .mobile-menu {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  background: var(--bg-secondary);
-  border-bottom: 1px solid var(--border);
-  padding: 2rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  box-shadow: var(--shadow-lg);
-  z-index: 1000;
+  display: none;
 }
 
 /* Buttons - Custom Polish */
@@ -942,4 +931,161 @@ main {
   .mobile-visible {
     display: none !important;
   }
-}@media (max-width: 900px) { .mobile-visible { display: flex !important; } }
+}
+@media (max-width: 900px) { .mobile-visible { display: flex !important; } }
+
+/* ============================================
+   ADMIN DASHBOARD — MOBILE OVERHAUL
+   ============================================ */
+@media (max-width: 768px) {
+  /* Header */
+  .admin-page-header h1 {
+    font-size: 2rem !important;
+  }
+
+  /* Stats cards: single column */
+  .admin-stats-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 1rem !important;
+  }
+
+  /* Tabs: prevent overflow, allow wrap */
+  .admin-tabs-row {
+    gap: 0.75rem !important;
+    flex-wrap: wrap !important;
+    justify-content: stretch !important;
+    width: 100% !important;
+  }
+
+  .admin-tabs-row .btn {
+    flex: 1 1 auto !important;
+    padding: 0.65rem 1rem !important;
+    font-size: 0.85rem !important;
+    min-width: 0 !important;
+    white-space: nowrap !important;
+  }
+
+  /* User table header: simplify columns */
+  .admin-user-header {
+    grid-template-columns: 1fr 0.5fr !important;
+    padding: 1rem 1.25rem !important;
+  }
+
+  /* User table rows: simplify columns */
+  .admin-user-row {
+    grid-template-columns: 1fr 0.5fr !important;
+    padding: 1rem 1.25rem !important;
+  }
+
+  /* Visitor log header/rows: 2-col layout */
+  .admin-visitor-header,
+  .admin-visitor-row {
+    grid-template-columns: 1fr 90px !important;
+    padding: 1rem 1.25rem !important;
+  }
+
+  /* Expanded user panel */
+  .admin-expanded-panel {
+    padding: 1.5rem !important;
+  }
+
+  /* Authority buttons: stack on mobile */
+  .admin-authority-row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.75rem !important;
+  }
+
+  .admin-authority-row .btn {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  /* Virtual node cards: truncate email */
+  .admin-node-email {
+    font-size: 0.9rem !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    max-width: 100% !important;
+  }
+
+  .admin-node-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 1rem !important;
+  }
+
+  .admin-node-actions {
+    width: 100% !important;
+    justify-content: flex-end !important;
+  }
+
+  /* Edit form: single column */
+  .admin-edit-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-stats-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ============================================
+   INBOX — MOBILE OVERHAUL
+   ============================================ */
+@media (max-width: 900px) {
+  /* Email header in detail/list view: word-break */
+  .inbox-email-title {
+    font-size: 0.9rem !important;
+    word-break: break-all !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    max-width: calc(100vw - 120px) !important;
+  }
+
+  /* Gmail row: compact 2-line layout on mobile */
+  .gmail-row {
+    padding: 1rem 1.25rem !important;
+    gap: 0 !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+
+  .gmail-row-sender {
+    width: auto !important;
+    font-size: 0.85rem !important;
+  }
+
+  .gmail-row-body {
+    flex-direction: column !important;
+    gap: 0.2rem !important;
+    width: 100% !important;
+  }
+
+  .gmail-row-time {
+    width: auto !important;
+    text-align: left !important;
+    font-size: 0.72rem !important;
+    margin-top: 2px !important;
+  }
+
+  /* Message detail: reduce padding */
+  .inbox-msg-detail-body {
+    padding: 1.5rem 1rem !important;
+  }
+
+  .inbox-msg-detail-body h1 {
+    font-size: 1.5rem !important;
+  }
+
+  /* OTP card */
+  .otp-code-display {
+    font-size: 2.5rem !important;
+    letter-spacing: 0.2em !important;
+  }
+}
+

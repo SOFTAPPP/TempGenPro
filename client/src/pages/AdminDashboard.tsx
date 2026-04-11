@@ -340,7 +340,7 @@ const AdminDashboard: React.FC = () => {
       )}
 
       {/* Tabs */}
-      <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '3rem', justifyContent: 'center' }}>
+      <div className="admin-tabs-row" style={{ display: 'flex', gap: '1.5rem', marginBottom: '3rem', justifyContent: 'center' }}>
         {[
           { id: 'users', label: 'User Network', icon: <Users size={18} /> },
           { id: 'visitors', label: 'Identity Logs', icon: <Shield size={18} /> }
@@ -373,10 +373,10 @@ const AdminDashboard: React.FC = () => {
             </div>
 
             <div className="glass-card" style={{ padding: '0', overflow: 'hidden' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '80px 1.5fr 1fr 1fr 100px 80px', padding: '1.5rem 2.5rem', borderBottom: '1px solid var(--border)', background: 'rgba(255,255,255,0.02)', fontWeight: 800, fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.1em' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '80px 1.5fr 1fr 1fr 100px 80px', padding: '1.5rem 2.5rem', borderBottom: '1px solid var(--border)', background: 'rgba(255,255,255,0.02)', fontWeight: 800, fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.1em' }} className="admin-user-header">
                 <span className="hide-mobile">ID</span>
                 <span>Alias / Role</span>
-                <span>Endpoint</span>
+                <span className="hide-mobile">Endpoint</span>
                 <span className="hide-mobile">Status</span>
                 <span className="hide-mobile">Established</span>
                 <span>Action</span>
@@ -387,7 +387,7 @@ const AdminDashboard: React.FC = () => {
               ) : (
                 filteredUsers.map(u => (
                   <div key={u.id}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '80px 1.5fr 1fr 1fr 100px 80px', padding: '1.5rem 2.5rem', alignItems: 'center', borderBottom: '1px solid var(--border-light)', background: expandedUser === u.id ? 'rgba(182, 139, 245, 0.03)' : 'transparent' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '80px 1.5fr 1fr 1fr 100px 80px', padding: '1.5rem 2.5rem', alignItems: 'center', borderBottom: '1px solid var(--border-light)', background: expandedUser === u.id ? 'rgba(182, 139, 245, 0.03)' : 'transparent' }} className="admin-user-row">
                       <span className="hide-mobile" style={{ fontFamily: 'monospace', color: 'var(--text-muted)' }}>#{u.id}</span>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                         <span style={{ fontWeight: 800, color: 'var(--text-bold)' }}>{u.username}</span>
@@ -421,13 +421,13 @@ const AdminDashboard: React.FC = () => {
                           exit={{ height: 0, opacity: 0 }}
                           style={{ overflow: 'hidden', background: 'rgba(0,0,0,0.1)' }}
                         >
-                          <div style={{ padding: '3rem' }}>
+                          <div style={{ padding: '3rem' }} className="admin-expanded-panel">
                             {/* Administrative Controls */}
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
                               <h4 style={{ fontSize: '1.2rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                                 <Shield size={20} className="text-primary" /> Authority Overrides
                               </h4>
-                              <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                              <div className="admin-authority-row" style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
                                 <button
                                   onClick={() => handleToggleBan(u.id, u.isBanned)}
                                   className="btn btn-sm"
@@ -467,7 +467,7 @@ const AdminDashboard: React.FC = () => {
                                     <h5 style={{ fontWeight: 800 }}>Modify Node Metadata</h5>
                                     <button onClick={() => setEditingUser(null)}><X size={20} /></button>
                                   </div>
-                                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+                                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }} className="admin-edit-grid">
                                     <div>
                                       <label style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>Username</label>
                                       <input type="text" className="input-field" value={editForm.username} onChange={e => setEditForm({ ...editForm, username: e.target.value })} style={{ height: '45px' }} />
@@ -540,15 +540,15 @@ const AdminDashboard: React.FC = () => {
                               ) : (
                                 u.tempEmails.map(te => (
                                   <div key={te.id} className="glass-card" style={{ padding: '2rem', background: 'var(--bg-secondary)' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
-                                      <div>
-                                        <h5 style={{ fontSize: '1.25rem', fontWeight: 800, fontFamily: 'monospace', marginBottom: '8px' }}>{te.email}</h5>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }} className="admin-node-header">
+                                      <div style={{ minWidth: 0, flex: 1 }}>
+                                        <h5 style={{ fontSize: '1.25rem', fontWeight: 800, fontFamily: 'monospace', marginBottom: '8px' }} className="admin-node-email">{te.email}</h5>
                                         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
                                           <div className="badge">{te.isActive ? 'Status: Online' : 'Status: Offline'}</div>
                                           <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Sync: {new Date(te.createdAt).toLocaleString()}</span>
                                         </div>
                                       </div>
-                                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                      <div style={{ display: 'flex', gap: '0.5rem' }} className="admin-node-actions">
                                         <button onClick={() => setExpandedEmail(expandedEmail === te.id ? null : te.id)} className="btn btn-secondary btn-sm">
                                           {expandedEmail === te.id ? 'Hide Packets' : 'View Packets'}
                                         </button>
@@ -614,7 +614,7 @@ const AdminDashboard: React.FC = () => {
                 color: 'var(--text-muted)',
                 textTransform: 'uppercase',
                 letterSpacing: '0.05em'
-              }}>
+              }} className="admin-visitor-header">
                 <span>Neural Hash</span>
                 <span>Relay Path</span>
                 <span className="hide-mobile">System Signature</span>
@@ -628,7 +628,7 @@ const AdminDashboard: React.FC = () => {
                   borderBottom: '1px solid var(--border-light)',
                   alignItems: 'center',
                   gap: '1rem'
-                }}>
+                }} className="admin-visitor-row">
                   <div style={{ overflow: 'hidden' }}>
                     {visitor.ip.split(',').map((ip, idx) => (
                       <div key={idx} style={{
