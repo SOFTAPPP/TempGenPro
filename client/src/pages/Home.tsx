@@ -36,9 +36,9 @@ const Home: React.FC = () => {
             <span className="gradient-text">Digital Footprint.</span>
           </h1>
 
-          <p className="hero-subtitle" style={{ fontSize: 'clamp(1.1rem, 2vw, 1.4rem)', maxWidth: '700px', lineHeight: 1.6, marginBottom: '4rem' }}>
-            Generate high-performance, disposable communication tunnels.
-            Protect your primary identity from surveillance, spam, and data exposure.
+          <p className="hero-subtitle" style={{ fontSize: 'clamp(1.1rem, 2vw, 1.4rem)', maxWidth: '750px', lineHeight: 1.6, marginBottom: '4rem' }}>
+            The premier high-performance relay system for developers, researchers, and professionals. 
+            Secure your primary identity from surveillance, marketing spam, and data exposure.
           </p>
 
           <div className="hero-actions" style={{ marginBottom: (tempEmail || loading) ? '5rem' : '0' }}>

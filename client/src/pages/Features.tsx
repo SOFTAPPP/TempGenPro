@@ -53,8 +53,8 @@ const Features: React.FC = () => {
           transition={{ delay: 0.1 }}
           className="hero-subtitle"
         >
-          Discover why thousands of developers and privacy-conscious users
-          rely on TempGenPro for their disposable email needs.
+          The trusted standard for developers, academic researchers, and business professionals 
+          seeking secure, high-performance disposable email infrastructure for every workflow.
         </motion.p>
       </section>
 
@@ -125,7 +125,7 @@ const Features: React.FC = () => {
         style={{ textAlign: 'center', padding: '6rem 2rem', background: 'var(--bg-secondary)', border: '1px solid var(--primary-border)', borderRadius: '40px' }}
       >
         <h2 style={{ fontSize: '3.5rem', fontWeight: 800, marginBottom: '1.5rem', letterSpacing: '-0.02em' }}>Ready to Take Control?</h2>
-        <p style={{ color: 'var(--text-muted)', marginBottom: '3.5rem', fontSize: '1.25rem', maxWidth: '650px', margin: '0 auto 3.5rem' }}>Join thousands of users who are already protecting their real inbox from marketing spam and security threats.</p>
+        <p style={{ color: 'var(--text-muted)', marginBottom: '3.5rem', fontSize: '1.25rem', maxWidth: '650px', margin: '0 auto 3.5rem' }}>Join the global community of developers, researchers, and professionals who secure their primary inbox with TempGenPro.</p>
         <div style={{ display: 'flex', justifyContent: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
           <Link to="/signup" className="btn btn-primary btn-lg">
             Get Started for Free
