@@ -34,7 +34,18 @@ export const createEmail = async (req: AuthRequest, res: Response) => {
       }
     }
 
-    const email = await generateUniqueEmail(userId);
+    const { type } = req.body;
+    let forcedDomain;
+
+    if (userRole === 'ADMIN') {
+      if (type === 'social') {
+        forcedDomain = 'mysocialrelay.com';
+      } else if (type === 'main') {
+        forcedDomain = 'tempgenpro.com';
+      }
+    }
+
+    const email = await generateUniqueEmail(userId, forcedDomain);
     
     // ⚡ SYNC
     const { syncAdminStats } = require('./adminController');
@@ -122,9 +133,9 @@ export const generateSimulationOTP = async (req: AuthRequest, res: Response) => 
     await prisma.message.create({
       data: {
         tempEmailId,
-        sender: 'system@tempgenpro.com',
-        subject: 'Your Verification Code',
-        body: `Your code is: ${otpCode}`,
+        sender: 'security-noreply@tempgenpro.com',
+        subject: `🔒 Verification Code: ${otpCode}`,
+        body: `Hello,\n\nYour one-time security code is: ${otpCode}. \n\nThis code is required to verify your identity. For security reasons, do not share this code with anyone. \n\nRegards,\nSecurity Team`,
         otpCode
       }
     });

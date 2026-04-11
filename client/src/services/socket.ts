@@ -8,6 +8,7 @@ class SocketService {
   private socket: Socket | null = null;
   private currentUserId: number | null = null;
   private currentInboxEmail: string | null = null;
+  private currentAdminRole: string | null = null;
 
   connect() {
     if (!this.socket) {
@@ -31,6 +32,10 @@ class SocketService {
         if (this.currentInboxEmail) {
           console.log('[Socket] 🔄 Re-joining inbox room:', this.currentInboxEmail);
           this.socket?.emit('join_inbox', this.currentInboxEmail);
+        }
+        if (this.currentAdminRole) {
+          console.log('[Socket] 🛡️ Re-joining admin room:', this.currentAdminRole);
+          this.socket?.emit('join_admin', this.currentAdminRole);
         }
       });
 
@@ -60,6 +65,7 @@ class SocketService {
   }
 
   joinAdmin(role: string) {
+    this.currentAdminRole = role;
     if (this.socket?.connected) {
       this.socket.emit('join_admin', role);
     }

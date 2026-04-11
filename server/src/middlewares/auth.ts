@@ -15,6 +15,10 @@ import prisma from '../utils/prisma.js';
 const banCache = new Map<number, { isBanned: boolean, timestamp: number }>();
 const BAN_CACHE_TTL = 30000; // 30 seconds
 
+export const clearBanCache = (userId: number) => {
+  banCache.delete(userId);
+};
+
 export const authenticateToken = async (req: AuthRequest, res: Response, next: NextFunction) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];

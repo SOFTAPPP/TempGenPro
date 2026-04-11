@@ -16,11 +16,11 @@ export const register = async (req: Request, res: Response) => {
     }
 
     const existingUser = await prisma.user.findFirst({
-      where: { 
+      where: {
         OR: [
-          { username: { equals: username, mode: 'insensitive' } }, 
+          { username: { equals: username, mode: 'insensitive' } },
           { email: { equals: email, mode: 'insensitive' } }
-        ] 
+        ]
       }
     });
 
@@ -55,7 +55,7 @@ export const login = async (req: Request, res: Response) => {
     }
 
     const cleanIdentifier = identifier.trim().toLowerCase();
-    const cleanPassword = password.trim();
+    const cleanPassword = password;
 
     console.log(`[Login Attempt] Identifier: "${cleanIdentifier}"`);
     const user = await prisma.user.findFirst({
@@ -77,7 +77,7 @@ export const login = async (req: Request, res: Response) => {
     }
 
     const validPassword = await bcrypt.compare(cleanPassword, user.password);
-    
+
     if (!validPassword) {
       return res.status(400).json({ error: 'Invalid password' });
     }

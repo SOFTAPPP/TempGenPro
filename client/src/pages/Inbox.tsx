@@ -231,17 +231,20 @@ const Inbox: React.FC = () => {
     return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
   };
 
-  const generateNew = React.useCallback(async () => {
+  const generateNew = React.useCallback(async (type?: string) => {
     setIsGenerating(true);
     try {
-      const res = await api.post('/emails/generate');
+      const res = await api.post('/emails/generate', { type });
       const newNode = {
         ...res.data,
         _count: res.data._count || { messages: 0 }
       };
       setEmails(prev => [newNode, ...prev]);
       setSelectedEmail(newNode);
-      showNotification('Relay Node Deployed Successfully.');
+      const successMsg = type === 'social' ? 'Social Relay (mysocialrelay.com) Deployed.' : 
+                        type === 'main' ? 'Main Relay (tempgenpro.com) Deployed.' : 
+                        'Relay Node Deployed Successfully.';
+      showNotification(successMsg);
     } catch (err: any) {
       if (err.response?.status === 403) {
         showNotification(err.response.data.error || 'Inventory limit reached.', 'error');
@@ -361,7 +364,52 @@ const Inbox: React.FC = () => {
                 <span style={{ fontSize: '0.6rem', fontWeight: 900, color: 'var(--text-muted)' }}>{socketStatus === 'connected' ? 'SECURE' : 'OFFLINE'}</span>
               </div>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              {(user as any)?.role === 'ADMIN' && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(0,0,0,0.2)', padding: '3px', borderRadius: '50px', border: '1px solid var(--border)', marginRight: '4px' }}>
+                  <button 
+                    className="btn btn-sm" 
+                    onClick={() => generateNew('main')} 
+                    disabled={isGenerating} 
+                    title="Deploy on tempgenpro.com"
+                    style={{ 
+                      padding: '0.4rem 0.8rem', 
+                      borderRadius: '50px', 
+                      fontSize: '0.65rem', 
+                      fontWeight: 900, 
+                      background: 'transparent',
+                      color: 'var(--text-muted)',
+                      border: 'none',
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--primary)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-muted)')}
+                  >
+                    Main
+                  </button>
+                  <div style={{ width: '1px', height: '12px', background: 'var(--border)' }}></div>
+                  <button 
+                    className="btn btn-sm" 
+                    onClick={() => generateNew('social')} 
+                    disabled={isGenerating} 
+                    title="Deploy on mysocialrelay.com"
+                    style={{ 
+                      padding: '0.4rem 0.8rem', 
+                      borderRadius: '50px', 
+                      fontSize: '0.65rem', 
+                      fontWeight: 900, 
+                      background: 'transparent',
+                      color: 'var(--primary)',
+                      border: 'none',
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.filter = 'brightness(1.2)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.filter = 'none')}
+                  >
+                    Relay
+                  </button>
+                </div>
+              )}
               {(user as any)?.role !== 'ADMIN' && (
                 <div className="limit-badge">
                   <Mail size={12} />
@@ -369,7 +417,7 @@ const Inbox: React.FC = () => {
                 </div>
               )}
               {((user as any)?.role === 'ADMIN' || emails.length < MAX_EMAILS) && (
-                <button className="btn btn-primary btn-nav-round" onClick={generateNew} disabled={isGenerating} style={{ width: '38px', height: '38px', borderRadius: '50%' }}>
+                <button className="btn btn-primary btn-nav-round" onClick={() => generateNew()} disabled={isGenerating} style={{ width: '38px', height: '38px', borderRadius: '50%' }}>
                   {isGenerating ? <RefreshCw size={16} className="animate-spin" /> : <Plus size={20} />}
                 </button>
               )}
@@ -387,7 +435,7 @@ const Inbox: React.FC = () => {
                 </div>
                 <h4 style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--text-bold)', marginBottom: '0.5rem' }}>No Active Nodes</h4>
                 <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '2rem' }}>Deploy your first communication tunnel to begin.</p>
-                <button onClick={generateNew} className="btn btn-primary" style={{ width: '100%', padding: '0.8rem', borderRadius: '12px', fontSize: '0.8rem', boxShadow: '0 0 20px var(--primary-glow)' }}>
+                <button onClick={() => generateNew()} className="btn btn-primary" style={{ width: '100%', padding: '0.8rem', borderRadius: '12px', fontSize: '0.8rem', boxShadow: '0 0 20px var(--primary-glow)' }}>
                   <Plus size={16} /> Deploy Node
                 </button>
               </div>

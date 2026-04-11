@@ -43,6 +43,10 @@ const Login: React.FC = () => {
         navigate('/inbox');
       }
     } catch (err: any) {
+      if (err.response?.status === 403) {
+        navigate('/suspended');
+        return;
+      }
       const msg = err.response?.data?.error || 'Login failed';
       setError(msg);
       showNotification(msg, 'error');

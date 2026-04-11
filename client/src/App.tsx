@@ -18,6 +18,8 @@ const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const Profile = lazy(() => import('./pages/Profile'));
 const Privacy = lazy(() => import('./pages/Privacy'));
 const Terms = lazy(() => import('./pages/Terms'));
+const Suspended = lazy(() => import('./pages/Suspended'));
+const Deleted = lazy(() => import('./pages/Deleted'));
 
 const LoadingFallback = () => (
   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', width: '100%', background: 'var(--bg)' }}>
@@ -40,6 +42,8 @@ const AnimatedRoutes = () => {
           <Route path="/profile" element={<PageWrapper><Profile /></PageWrapper>} />
           <Route path="/privacy" element={<PageWrapper><Privacy /></PageWrapper>} />
           <Route path="/terms" element={<PageWrapper><Terms /></PageWrapper>} />
+          <Route path="/suspended" element={<PageWrapper><Suspended /></PageWrapper>} />
+          <Route path="/deleted" element={<PageWrapper><Deleted /></PageWrapper>} />
         </Routes>
       </AnimatePresence>
     </Suspense>
@@ -59,19 +63,28 @@ const PageWrapper = ({ children }: { children: React.ReactNode }) => (
 
 import { NotificationProvider } from './context/NotificationContext';
 
+const AppContent: React.FC = () => {
+  const location = useLocation();
+  const isLockdownPage = location.pathname === '/suspended' || location.pathname === '/deleted';
+
+  return (
+    <div className="app-container">
+      {!isLockdownPage && <Navbar />}
+      <main>
+        <AnimatedRoutes />
+      </main>
+      {!isLockdownPage && <Footer />}
+    </div>
+  );
+};
+
 const App: React.FC = () => {
   return (
     <Router>
       <ScrollToTop />
       <NotificationProvider>
         <AuthProvider>
-          <div className="app-container">
-            <Navbar />
-            <main>
-              <AnimatedRoutes />
-            </main>
-            <Footer />
-          </div>
+          <AppContent />
         </AuthProvider>
       </NotificationProvider>
     </Router>

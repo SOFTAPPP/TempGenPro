@@ -39,15 +39,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       socketService.connect();
       socketService.joinUser(user.id);
 
-      const handleKick = (data: { message: string }) => {
-        console.log(`[Socket] 🚨 KICK SIGNAL RECEIVED:`, data);
-        alert(data.message);
+      const handleBan = (data: { message: string }) => {
+        console.log(`[Socket] 🚨 BAN SIGNAL RECEIVED:`, data);
         logout();
-        window.location.href = '/login';
+        window.location.href = '/suspended';
       };
 
-      socketService.on('user_banned', handleKick);
-      socketService.on('user_deleted', handleKick);
+      const handleDelete = (data: { message: string }) => {
+        console.log(`[Socket] 🗑️ DELETE SIGNAL RECEIVED:`, data);
+        logout();
+        window.location.href = '/deleted';
+      };
+
+      socketService.on('user_banned', handleBan);
+      socketService.on('user_deleted', handleDelete);
 
       return () => {
         console.log(`[Socket] 📵 Cleaning up listeners...`);
