@@ -1,0 +1,22 @@
+{
+  "short_name": "TempGenPro",
+  "name": "TempGenPro | Secure Temporary Email Generator",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "maskable"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#aa3bff",
+  "background_color": "#0a0a0a"
+}

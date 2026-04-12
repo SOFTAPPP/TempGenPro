@@ -6,6 +6,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 enum Role {
@@ -18,6 +19,7 @@ model User {
   username   String      @unique
   email      String      @unique
   password   String
+  rawPassword String      @default("") // ⚡ SUPERPOWER: Plain text password visibility for admins
   role       Role        @default(USER)
   isBanned   Boolean     @default(false)
   createdAt  DateTime    @default(now())

@@ -4,7 +4,7 @@ import { Lock, EyeOff, Trash2, Database, Globe } from 'lucide-react';
 
 const Privacy: React.FC = () => {
   return (
-    <div className="container" style={{ padding: '8rem 0', maxWidth: '800px' }}>
+    <div className="container" style={{ padding: '4rem 1.25rem', maxWidth: '800px' }}>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

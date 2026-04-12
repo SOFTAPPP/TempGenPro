@@ -18,6 +18,8 @@
   --border-light: rgba(255, 255, 255, 0.04);
   --glass: rgba(16, 17, 21, 0.8);
   --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --nav-height: 90px;
+  --nav-height-mobile: 70px;
 }
 
 /* Hyper-Smooth Spin Animation */
@@ -200,15 +202,21 @@ input:focus+.input-icon {
 
 main {
   flex: 1;
+  padding-top: var(--nav-height);
 }
 
-/* Navbar */
+@media (max-width: 768px) {
+  main {
+    padding-top: var(--nav-height-mobile);
+  }
+}
+
 .nav {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  height: 90px;
+  height: var(--nav-height);
   display: flex;
   align-items: center;
   z-index: 1000;
@@ -217,6 +225,12 @@ main {
   -webkit-backdrop-filter: blur(8px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (max-width: 768px) {
+  .nav {
+    height: var(--nav-height-mobile);
+  }
 }
 
 .nav.scrolled {
@@ -769,7 +783,7 @@ main {
   .inbox-layout {
     display: flex !important;
     flex-direction: column !important;
-    height: calc(100vh - 70px) !important;
+    height: calc(100vh - var(--nav-height-mobile)) !important;
     margin-top: 0 !important;
     margin-bottom: 0 !important;
     min-height: 0 !important;
@@ -777,7 +791,7 @@ main {
     border-radius: 0 !important;
     border: none !important;
     position: fixed !important;
-    top: 70px;
+    top: var(--nav-height-mobile);
     left: 0;
     right: 0;
     bottom: 0;
@@ -796,7 +810,13 @@ main {
 }
 
 .inbox-container {
-  padding: 5.5rem 1.5rem 2rem;
+  padding: 2rem 1.5rem;
+}
+
+@media (max-width: 900px) {
+  .inbox-container {
+    padding: 1rem 1rem;
+  }
 }
 
 @media (max-width: 900px) {

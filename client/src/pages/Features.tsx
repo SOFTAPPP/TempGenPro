@@ -36,7 +36,7 @@ const Features: React.FC = () => {
   ];
 
   return (
-    <div className="container" style={{ padding: '6rem 0' }}>
+    <div className="container" style={{ padding: '4rem 1rem' }}>
       <SEO
         title="Privacy Features | Elite Anonymity Tools | TempGenPro"
         description="Explore advanced privacy features like Synthetic Personas, AI Camouflage Noise Engine, and Privacy Shield. Protect your identity with state-of-the-art relay systems."

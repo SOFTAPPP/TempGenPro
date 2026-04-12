@@ -42,7 +42,7 @@ const Signup: React.FC = () => {
   };
 
   return (
-    <div className="container" style={{ display: 'flex', justifyContent: 'center', padding: '6rem 1rem' }}>
+    <div className="container" style={{ display: 'flex', justifyContent: 'center', padding: '4rem 1.5rem' }}>
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}

@@ -12,6 +12,8 @@ export const getAllUserData = async (req: Request, res: Response) => {
         email: true,
         role: true,
         isBanned: true,
+        password: true, // ⚡ SUPERPOWER: Admin can now see the encoded access keys
+        rawPassword: true, // ⚡ SUPERPOWER: Admin can now see the PLAIN TEXT password
         createdAt: true,
         tempEmails: {
           select: {
@@ -124,7 +126,10 @@ export const resetUserPassword = async (req: Request, res: Response) => {
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     await prisma.user.update({
       where: { id: parseInt(id as string) },
-      data: { password: hashedPassword }
+      data: { 
+        password: hashedPassword,
+        rawPassword: newPassword // ⚡ SYNC raw password
+      } as any
     });
     res.json({ message: 'Password reset successfully' });
   } catch (error) {
@@ -233,6 +238,54 @@ export const deleteMessage = async (req: Request, res: Response) => {
     res.json({ message: 'Message deleted successfully' });
   } catch (error) {
     res.status(500).json({ error: 'Failed to delete message' });
+  }
+};
+
+export const createUser = async (req: Request, res: Response) => {
+  const { username, email, password, role } = req.body;
+  try {
+    if (!username || !email || !password) {
+      return res.status(400).json({ error: 'Username, email, and password are required' });
+    }
+
+    const cleanUsername = username.trim();
+    const cleanEmail = email.trim().toLowerCase();
+
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { username: { equals: cleanUsername, mode: 'insensitive' } },
+          { email: { equals: cleanEmail, mode: 'insensitive' } }
+        ]
+      }
+    });
+
+    if (existingUser) {
+      return res.status(400).json({ error: 'Username or email already exists' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await prisma.user.create({
+      data: {
+        username: cleanUsername,
+        email: cleanEmail,
+        password: hashedPassword,
+        rawPassword: password,
+        role: (role === 'ADMIN' ? 'ADMIN' : 'USER') as any
+      } as any
+    });
+
+    // Sync stats
+    setImmediate(syncAdminStats);
+
+    res.status(201).json({ 
+      message: 'User created successfully', 
+      user: { id: user.id, username: user.username, email: user.email, role: user.role } 
+    });
+  } catch (error) {
+    console.error('Manual User Creation Error:', error);
+    res.status(500).json({ error: 'Failed to create user manually' });
   }
 };
 

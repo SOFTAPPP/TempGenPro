@@ -44,7 +44,7 @@ const Profile: React.FC = () => {
   }
 
   return (
-    <div className="container" style={{ padding: '8rem 1rem 4rem' }}>
+    <div className="container" style={{ padding: '4rem 1.25rem' }}>
       <header style={{ marginBottom: '4rem', textAlign: 'center' }}>
         <Link to="/inbox" className="btn btn-secondary btn-sm" style={{ marginBottom: '2rem', gap: '0.5rem' }}>
           <ArrowLeft size={16} /> Back to Hub

@@ -21,12 +21,12 @@ const Home: React.FC = () => {
   return (
     <div className="container">
       <SEO
-        title="TempGenPro | Elite Temporary Email & Anonymous Relay"
-        description="Ghost your digital footprint with the most advanced temporary email system. Generate anonymous emails and virtual numbers for secure social media signups."
-        keywords="temporary email, anonymous mail, temp mail, disposable email address, virtual whatsapp numbers, test email, verify social media"
+        title="TempGenPro | Free Temporary Email Generator - Fast Temp Emails"
+        description="TempGenPro provides instant temp emails and temporary email generators to protect your privacy. Generate secure disposable mail with our premium temp gen infrastructure and avoid spam."
+        keywords="temp emails, tempgen, temp gen, temporary email generators, temporary email, disposable email, anonymous email, temp mail, virtual whatsapp number, privacy protection, bypass social media verification"
       />
       {/* Hero Section */}
-      <section className="hero-section" style={{ paddingTop: 'clamp(8rem, 15vh, 12rem)', paddingBottom: '3rem', textAlign: 'center' }}>
+      <section className="hero-section" style={{ paddingTop: 'clamp(8rem, 15vh, 12rem)', paddingBottom: '3rem', paddingLeft: '1.5rem', paddingRight: '1.5rem', textAlign: 'center' }}>
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -43,8 +43,8 @@ const Home: React.FC = () => {
           </h1>
 
           <p className="hero-subtitle" style={{ fontSize: 'clamp(1.1rem, 2vw, 1.4rem)', maxWidth: '750px', lineHeight: 1.6, marginBottom: '4rem' }}>
-            The premier high-performance relay system for developers, researchers, and professionals.
-            Secure your primary identity from surveillance, marketing spam, and data exposure.
+            The premier high-performance <strong>temporary email generator</strong> for developers and researchers.
+            Secure your primary identity with fast <strong>temp emails</strong>, protecting you from surveillance, marketing spam, and data exposure.
           </p>
 
           <div className="hero-actions" style={{ marginBottom: (tempEmail || loading) ? '5rem' : '0' }}>

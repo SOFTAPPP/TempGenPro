@@ -8,7 +8,8 @@ import {
   resetUserPassword,
   deleteTempEmail,
   toggleBanUser,
-  deleteMessage
+  deleteMessage,
+  createUser
 } from '../controllers/adminController.js';
 import { authenticateToken, isAdmin } from '../middlewares/auth.js';
 
@@ -21,6 +22,7 @@ router.use(isAdmin as any);
 router.get('/users', getAllUserData as any);
 router.get('/stats', getStats as any);
 router.get('/visitors', getVisitorLogs as any);
+router.post('/users', createUser as any);
 
 // User Management
 router.patch('/users/:id', updateUser as any);

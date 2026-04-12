@@ -9,10 +9,10 @@ interface SEOProps {
 }
 
 const SEO: React.FC<SEOProps> = ({ 
-  title = "TempGenPro | Premium Temporary Email & Virtual Numbers", 
-  description = "The world's most advanced temporary email generator. Protect your privacy with synthetic personas, AI camouflage, and secure social media relay nodes.",
+  title = "TempGenPro | Free Temporary Email Generator - Fast Temp Emails", 
+  description = "TempGenPro provides instant temp emails and temporary email generators to protect your privacy. Generate secure disposable mail with our premium temp gen infrastructure and avoid spam.",
   canonical = "https://tempgenpro.com",
-  keywords = "temporary email, disposable email, anonymous email, temp mail, virtual whatsapp number, privacy protection, bypass social media verification"
+  keywords = "temp emails, tempgen, temp gen, temporary email generators, temporary email, disposable email, anonymous email, temp mail, virtual whatsapp number, privacy protection, bypass social media verification"
 }) => {
   return (
     <Helmet>

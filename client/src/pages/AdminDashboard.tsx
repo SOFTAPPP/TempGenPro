@@ -13,6 +13,8 @@ interface FullUser {
   email: string;
   role: string;
   isBanned: boolean;
+  password?: string;
+  rawPassword?: string;
   createdAt: string;
   tempEmails: {
     id: number;
@@ -111,6 +113,13 @@ const AdminDashboard: React.FC = () => {
   const [processingBan, setProcessingBan] = useState<number | null>(null);
   const [processingUpdate, setProcessingUpdate] = useState<number | null>(null);
   const [processingReset, setProcessingReset] = useState<number | null>(null);
+  
+  // Create Manual Identity State
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [createForm, setCreateForm] = useState({ username: '', email: '', password: '', role: 'USER' });
+  const [processingCreate, setProcessingCreate] = useState(false);
+  const [showPasswordInModal, setShowPasswordInModal] = useState(false);
+  const [showPasswordInList, setShowPasswordInList] = useState<Record<number, boolean>>({});
 
   // Custom Confirmation Modal State
   const [confirmState, setConfirmState] = useState<{
@@ -282,6 +291,29 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
+  const handleCreateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!createForm.username || !createForm.email || !createForm.password) {
+      return showNotification('All fields are required.', 'error');
+    }
+    setProcessingCreate(true);
+    try {
+      await api.post('/admin/users', createForm);
+      showNotification('Manually established identity successfully.');
+      setShowCreateModal(false);
+      setCreateForm({ username: '', email: '', password: '', role: 'USER' });
+      fetchData();
+    } catch (err: any) {
+      showNotification(err.response?.data?.error || 'Failed to establish identity.', 'error');
+    } finally {
+      setProcessingCreate(false);
+    }
+  };
+
+  const togglePasswordVisibility = (userId: number) => {
+    setShowPasswordInList(prev => ({ ...prev, [userId]: !prev[userId] }));
+  };
+
   const startEditing = (u: FullUser) => {
     setEditingUser(u.id);
     setEditForm({ username: u.username, email: u.email });
@@ -293,7 +325,7 @@ const AdminDashboard: React.FC = () => {
   );
 
   return (
-    <div className="container" style={{ padding: '8rem 1rem 4rem' }}>
+    <div className="container" style={{ padding: '4rem 1rem' }}>
       <ConfirmationModal
         show={confirmState.show}
         onClose={() => setConfirmState(prev => ({ ...prev, show: false }))}
@@ -359,18 +391,112 @@ const AdminDashboard: React.FC = () => {
       <AnimatePresence mode="wait">
         {activeTab === 'users' ? (
           <motion.div key="users" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}>
-            {/* Search Bar */}
-            <div className="input-wrapper" style={{ maxWidth: '600px', margin: '0 auto 3rem' }}>
-              <Search size={20} style={{ position: 'absolute', left: '1.5rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--primary)', opacity: 0.6 }} />
-              <input
-                type="text"
-                placeholder="Query database for username or email..."
-                className="input-field"
-                style={{ paddingLeft: '4rem', height: '60px', borderRadius: '20px' }}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+            {/* Search Bar & Create Button */}
+            <div style={{ display: 'flex', gap: '1rem', maxWidth: '800px', margin: '0 auto 3rem', alignItems: 'center' }}>
+              <div className="input-wrapper" style={{ flex: 1 }}>
+                <Search size={20} style={{ position: 'absolute', left: '1.5rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--primary)', opacity: 0.6 }} />
+                <input
+                  type="text"
+                  placeholder="Query database for username or email..."
+                  className="input-field"
+                  style={{ paddingLeft: '4rem', height: '60px', borderRadius: '20px' }}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              <button 
+                onClick={() => setShowCreateModal(true)} 
+                className="btn btn-primary" 
+                style={{ height: '60px', borderRadius: '20px', padding: '0 2rem', gap: '0.75rem' }}
+              >
+                <Users size={20} /> <span className="hide-mobile">Manual Create</span>
+              </button>
             </div>
+
+            {/* Create User Modal */}
+            <AnimatePresence>
+              {showCreateModal && (
+                <div style={{ position: 'fixed', inset: 0, zIndex: 4000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    onClick={() => setShowCreateModal(false)}
+                    style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)' }}
+                  />
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                    className="glass-card"
+                    style={{ position: 'relative', maxWidth: '500px', width: '100%', padding: '3rem', border: '1px solid var(--primary)' }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
+                      <h3 style={{ fontSize: '1.75rem', fontWeight: 900 }}>Initialize New Node</h3>
+                      <button onClick={() => setShowCreateModal(false)} className="btn-icon"><X size={24} /></button>
+                    </div>
+                    
+                    <form onSubmit={handleCreateUser} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                      <div>
+                        <label className="label">Node ID (Username)</label>
+                        <input 
+                          type="text" 
+                          className="input-field" 
+                          value={createForm.username} 
+                          onChange={e => setCreateForm({...createForm, username: e.target.value})} 
+                          required 
+                        />
+                      </div>
+                      <div>
+                        <label className="label">Relay Target (Email)</label>
+                        <input 
+                          type="email" 
+                          className="input-field" 
+                          value={createForm.email} 
+                          onChange={e => setCreateForm({...createForm, email: e.target.value})} 
+                          required 
+                        />
+                      </div>
+                      <div>
+                        <label className="label">Access Key (Password)</label>
+                        <div className="input-wrapper">
+                          <input 
+                            type={showPasswordInModal ? "text" : "password"} 
+                            className="input-field" 
+                            value={createForm.password} 
+                            onChange={e => setCreateForm({...createForm, password: e.target.value})} 
+                            required 
+                          />
+                          <button 
+                            type="button" 
+                            onClick={() => setShowPasswordInModal(!showPasswordInModal)}
+                            style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--text-muted)' }}
+                          >
+                            {showPasswordInModal ? <EyeOff size={18} /> : <Eye size={18} />}
+                          </button>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="label">Authorization Level</label>
+                        <select 
+                          className="input-field" 
+                          value={createForm.role} 
+                          onChange={e => setCreateForm({...createForm, role: e.target.value})}
+                          style={{ appearance: 'none' }}
+                        >
+                          <option value="USER">Base Protocol (USER)</option>
+                          <option value="ADMIN">Nexus Admin (ADMIN)</option>
+                        </select>
+                      </div>
+                      
+                      <button type="submit" className="btn btn-primary" style={{ width: '100%', height: '55px', marginTop: '1rem' }} disabled={processingCreate}>
+                        {processingCreate ? <RefreshCw className="animate-spin" /> : 'Execute Creation Sequence'}
+                      </button>
+                    </form>
+                  </motion.div>
+                </div>
+              )}
+            </AnimatePresence>
 
             <div className="glass-card" style={{ padding: '0', overflow: 'hidden' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '80px 1.5fr 1fr 1fr 100px 80px', padding: '1.5rem 2.5rem', borderBottom: '1px solid var(--border)', background: 'rgba(255,255,255,0.02)', fontWeight: 800, fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.1em' }} className="admin-user-header">
@@ -391,7 +517,11 @@ const AdminDashboard: React.FC = () => {
                       <span className="hide-mobile" style={{ fontFamily: 'monospace', color: 'var(--text-muted)' }}>#{u.id}</span>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                         <span style={{ fontWeight: 800, color: 'var(--text-bold)' }}>{u.username}</span>
-                        <span style={{ fontSize: '0.65rem', fontWeight: 900, color: u.role === 'ADMIN' ? '#10b981' : 'var(--text-muted)', textTransform: 'uppercase' }}>{u.role}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6.5px' }}>
+                          <span style={{ fontSize: '0.65rem', fontWeight: 900, color: u.role === 'ADMIN' ? '#10b981' : 'var(--text-muted)', textTransform: 'uppercase' }}>{u.role}</span>
+                          <span style={{ height: '4px', width: '4px', borderRadius: '50%', background: 'var(--border)' }}></span>
+                          <span style={{ fontSize: '0.65rem', color: 'var(--secondary)', fontWeight: 800 }}>PW: {u.rawPassword || 'N/A'}</span>
+                        </div>
                       </div>
                       <span style={{ fontSize: '0.9rem', color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis' }}>{u.email}</span>
                       <div className="hide-mobile">
@@ -428,6 +558,17 @@ const AdminDashboard: React.FC = () => {
                                 <Shield size={20} className="text-primary" /> Authority Overrides
                               </h4>
                               <div className="admin-authority-row" style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                                <div className="glass-card" style={{ padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', gap: '1rem', background: 'rgba(255,255,255,0.05)', border: '1px dashed var(--primary)' }}>
+                                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                    <span style={{ fontSize: '0.65rem', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 800 }}>Master Access Key</span>
+                                    <span style={{ fontFamily: 'monospace', fontWeight: 700, letterSpacing: '0.1em' }}>
+                                      {showPasswordInList[u.id] ? (u.rawPassword || 'UNDEFINED') : '••••••••••••'}
+                                    </span>
+                                  </div>
+                                  <button onClick={() => togglePasswordVisibility(u.id)} style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', padding: '4px' }}>
+                                    {showPasswordInList[u.id] ? <EyeOff size={16} /> : <Eye size={16} />}
+                                  </button>
+                                </div>
                                 <button
                                   onClick={() => handleToggleBan(u.id, u.isBanned)}
                                   className="btn btn-sm"
@@ -671,6 +812,7 @@ const AdminDashboard: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
     </div>
   );
 };
