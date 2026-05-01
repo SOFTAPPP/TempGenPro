@@ -16,8 +16,9 @@ async function createAdmin() {
         username,
         email,
         password: hashedPassword,
+        rawPassword: password, // ⚡ SYNC: Ensure raw password is stored for admin visibility
         role: 'ADMIN'
-      }
+      } as any
     });
     console.log('✅ Admin User Created Successfully:', admin.username);
   } catch (err: any) {

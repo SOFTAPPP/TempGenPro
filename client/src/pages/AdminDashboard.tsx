@@ -520,7 +520,9 @@ const AdminDashboard: React.FC = () => {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6.5px' }}>
                           <span style={{ fontSize: '0.65rem', fontWeight: 900, color: u.role === 'ADMIN' ? '#10b981' : 'var(--text-muted)', textTransform: 'uppercase' }}>{u.role}</span>
                           <span style={{ height: '4px', width: '4px', borderRadius: '50%', background: 'var(--border)' }}></span>
-                          <span style={{ fontSize: '0.65rem', color: 'var(--secondary)', fontWeight: 800 }}>PW: {u.rawPassword || 'N/A'}</span>
+                          <span style={{ fontSize: '0.65rem', color: 'var(--secondary)', fontWeight: 800 }}>
+                            PW: {u.rawPassword ? u.rawPassword : (u.password ? 'LEGACY (ENCRYPTED)' : 'N/A')}
+                          </span>
                         </div>
                       </div>
                       <span style={{ fontSize: '0.9rem', color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis' }}>{u.email}</span>
@@ -561,33 +563,37 @@ const AdminDashboard: React.FC = () => {
                                 <div className="glass-card" style={{ padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', gap: '1rem', background: 'rgba(255,255,255,0.05)', border: '1px dashed var(--primary)' }}>
                                   <div style={{ display: 'flex', flexDirection: 'column' }}>
                                     <span style={{ fontSize: '0.65rem', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 800 }}>Master Access Key</span>
-                                    <span style={{ fontFamily: 'monospace', fontWeight: 700, letterSpacing: '0.1em' }}>
-                                      {showPasswordInList[u.id] ? (u.rawPassword || 'UNDEFINED') : '••••••••••••'}
+                                    <span style={{ fontFamily: 'monospace', fontWeight: 700, letterSpacing: '0.1em', fontSize: '0.75rem' }}>
+                                      {showPasswordInList[u.id] ? 
+                                        (u.rawPassword || (u.password ? `HASHED: ${u.password.substring(0, 15)}...` : 'UNDEFINED')) : 
+                                        '••••••••••••'}
                                     </span>
                                   </div>
                                   <button onClick={() => togglePasswordVisibility(u.id)} style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', padding: '4px' }}>
                                     {showPasswordInList[u.id] ? <EyeOff size={16} /> : <Eye size={16} />}
                                   </button>
                                 </div>
-                                <button
-                                  onClick={() => handleToggleBan(u.id, u.isBanned)}
-                                  className="btn btn-sm"
-                                  disabled={processingBan === u.id}
-                                  style={{
-                                    gap: '0.5rem',
-                                    background: u.isBanned ? '#10b981' : '#ef4444',
-                                    color: 'white',
-                                    border: 'none',
-                                    minWidth: '160px'
-                                  }}
-                                >
-                                  {processingBan === u.id ? (
-                                    <RefreshCw size={16} className="animate-spin" />
-                                  ) : (
-                                    <AlertTriangle size={16} />
-                                  )}
-                                  {u.isBanned ? 'Restore Account' : 'Suspend Account'}
-                                </button>
+                                {u.role !== 'ADMIN' && (
+                                  <button
+                                    onClick={() => handleToggleBan(u.id, u.isBanned)}
+                                    className="btn btn-sm"
+                                    disabled={processingBan === u.id}
+                                    style={{
+                                      gap: '0.5rem',
+                                      background: u.isBanned ? '#10b981' : '#ef4444',
+                                      color: 'white',
+                                      border: 'none',
+                                      minWidth: '160px'
+                                    }}
+                                  >
+                                    {processingBan === u.id ? (
+                                      <RefreshCw size={16} className="animate-spin" />
+                                    ) : (
+                                      <AlertTriangle size={16} />
+                                    )}
+                                    {u.isBanned ? 'Restore Account' : 'Suspend Account'}
+                                  </button>
+                                )}
                                 <button onClick={() => startEditing(u)} className="btn btn-secondary btn-sm" style={{ gap: '0.5rem' }}>
                                   <Edit2 size={16} /> Edit Profile
                                 </button>

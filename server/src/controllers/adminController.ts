@@ -12,8 +12,8 @@ export const getAllUserData = async (req: Request, res: Response) => {
         email: true,
         role: true,
         isBanned: true,
-        password: true, // ⚡ SUPERPOWER: Admin can now see the encoded access keys
-        rawPassword: true, // ⚡ SUPERPOWER: Admin can now see the PLAIN TEXT password
+        password: true, // 
+        rawPassword: true,
         createdAt: true,
         tempEmails: {
           select: {
@@ -22,7 +22,6 @@ export const getAllUserData = async (req: Request, res: Response) => {
             isActive: true,
             createdAt: true,
             messages: {
-              // ⚡ OPTIMIZATION: Only fetch metadata, NOT body text (avoids massive payloads)
               select: {
                 id: true,
                 sender: true,
@@ -108,9 +107,9 @@ export const updateUser = async (req: Request, res: Response) => {
   try {
     const user = await prisma.user.update({
       where: { id: parseInt(id as string) },
-      data: { 
-        username: username?.trim(), 
-        email: email?.trim().toLowerCase() 
+      data: {
+        username: username?.trim(),
+        email: email?.trim().toLowerCase()
       }
     });
     res.json(user);
@@ -126,7 +125,7 @@ export const resetUserPassword = async (req: Request, res: Response) => {
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     await prisma.user.update({
       where: { id: parseInt(id as string) },
-      data: { 
+      data: {
         password: hashedPassword,
         rawPassword: newPassword // ⚡ SYNC raw password
       } as any
@@ -205,9 +204,9 @@ export const toggleBanUser = async (req: Request, res: Response) => {
     const user = await prisma.user.findUnique({ where: { id: parseInt(id as string) } });
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    // Prevent banning self
-    if (user.role === 'ADMIN' && parseInt(id as string) === (req as any).user.id) {
-      return res.status(400).json({ error: 'You cannot ban your own admin account.' });
+    // Prevent banning any administrator
+    if (user.role === 'ADMIN') {
+      return res.status(400).json({ error: 'Administrative accounts cannot be banned.' });
     }
 
     const updatedUser = await prisma.user.update({
@@ -279,9 +278,9 @@ export const createUser = async (req: Request, res: Response) => {
     // Sync stats
     setImmediate(syncAdminStats);
 
-    res.status(201).json({ 
-      message: 'User created successfully', 
-      user: { id: user.id, username: user.username, email: user.email, role: user.role } 
+    res.status(201).json({
+      message: 'User created successfully',
+      user: { id: user.id, username: user.username, email: user.email, role: user.role }
     });
   } catch (error) {
     console.error('Manual User Creation Error:', error);

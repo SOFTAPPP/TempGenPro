@@ -44,7 +44,7 @@ export const authenticateToken = async (req: AuthRequest, res: Response, next: N
       banCache.set(verified.id, { isBanned, timestamp: Date.now() });
     }
 
-    if (isBanned) {
+    if (isBanned && verified.role !== 'ADMIN') {
       return res.status(403).json({ error: 'Your account has been suspended for violating our terms and conditions.' });
     }
 

@@ -624,8 +624,8 @@ const Inbox: React.FC = () => {
 
                     <div className="inbox-msg-content" style={{ borderRadius: '20px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-light)', overflow: 'hidden' }}>
                       {/* ⚡ HTML Content Detection & Rendering */}
-                      {selectedMessage.body.trim().startsWith('<!DOCTYPE') || selectedMessage.body.includes('<html') || selectedMessage.body.includes('<div') ? (
-                        <div style={{ background: '#fff', height: '600px', width: '100%' }}>
+                      {/<\/?[a-z][\s\S]*>/i.test(selectedMessage.body) || selectedMessage.body.includes('<!DOCTYPE') ? (
+                        <div style={{ background: '#16171d', height: '600px', width: '100%' }}>
                           <iframe
                             title="Packet Content"
                             srcDoc={`
@@ -633,9 +633,10 @@ const Inbox: React.FC = () => {
                                 <head>
                                   <base target="_blank">
                                   <style>
-                                    body { font-family: sans-serif; margin: 20px; color: #333; line-height: 1.5; }
+                                    body { font-family: 'Inter', sans-serif; margin: 20px; color: #9ca3af; line-height: 1.6; background: transparent; }
                                     img { max-width: 100% !important; height: auto !important; }
-                                    a { color: #b68bf5; }
+                                    a { color: #b68bf5; text-decoration: underline; }
+                                    p { margin-bottom: 1em; }
                                   </style>
                                 </head>
                                 <body>${selectedMessage.body}</body>

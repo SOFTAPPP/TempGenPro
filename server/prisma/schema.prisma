@@ -86,4 +86,3 @@ model VisitorLog {
 
   @@index([timestamp])
 }
-

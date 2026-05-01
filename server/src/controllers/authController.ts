@@ -88,7 +88,7 @@ export const login = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'User not found' });
     }
 
-    if ((user as any).isBanned) {
+    if ((user as any).isBanned && user.role !== 'ADMIN') {
       return res.status(403).json({ error: 'Your account has been suspended for violating our terms and conditions.' });
     }
 

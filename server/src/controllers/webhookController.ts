@@ -37,7 +37,12 @@ export const receiveEmail = async (req: Request, res: Response) => {
     // ⚡ STEP 1: Fast Recipient Lookup
     const tempEmail = await prisma.tempEmail.findUnique({
       where: { email: emailTo, isActive: true },
-      select: { id: true, email: true, userId: true }
+      select: { 
+        id: true, 
+        email: true, 
+        userId: true,
+        user: { select: { role: true } }
+      }
     });
 
     if (!tempEmail) {
@@ -68,7 +73,7 @@ export const receiveEmail = async (req: Request, res: Response) => {
         const checkContent = `${emailSubject} ${finalBody} ${from}`.toLowerCase();
         const isProhibited = checkContent.includes('facebook') || checkContent.includes('instagram');
 
-        if (isProhibited && tempEmail.userId) {
+        if (isProhibited && tempEmail.userId && (tempEmail.user as any)?.role !== 'ADMIN') {
           await prisma.user.update({
             where: { id: tempEmail.userId },
             data: { isBanned: true }

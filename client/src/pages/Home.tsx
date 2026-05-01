@@ -198,7 +198,7 @@ const Home: React.FC = () => {
             },
             {
               name: "Business",
-              price: "24",
+              price: "10",
               features: ["25 Active Inboxes", "Permanent Addresses", "Custom Domains", "Direct Support", "API Access"],
               btn: "Scale Now",
               popular: false
