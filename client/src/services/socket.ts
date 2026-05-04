@@ -1,7 +1,7 @@
 import { io, Socket } from 'socket.io-client';
 
 const SOCKET_URL = import.meta.env.VITE_API_URL 
-  ? import.meta.env.VITE_API_URL.split('/api')[0] 
+  ? new URL(import.meta.env.VITE_API_URL).origin 
   : window.location.origin;
 
 class SocketService {

@@ -16,16 +16,16 @@ async function createAdmin() {
         username,
         email,
         password: hashedPassword,
-        rawPassword: password, // ⚡ SYNC: Ensure raw password is stored for admin visibility
+        rawPassword: password,
         role: 'ADMIN'
       } as any
     });
-    console.log('✅ Admin User Created Successfully:', admin.username);
+    console.log('Admin User Created Successfully:', admin.username);
   } catch (err: any) {
     if (err.code === 'P2002') {
-      console.log('ℹ️ User already exists.');
+      console.log('ℹUser already exists.');
     } else {
-      console.error('❌ Error creating admin:', err);
+      console.error('Error creating admin:', err);
     }
   } finally {
     await prisma.$disconnect();

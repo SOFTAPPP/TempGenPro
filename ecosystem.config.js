@@ -22,6 +22,21 @@ module.exports = {
       out_file: "./logs/out.log",
       log_date_format: "YYYY-MM-DD HH:mm:ss Z",
       merge_logs: true,
+    },
+    {
+      name: "tempgenpro-ai",
+      script: "./venv/bin/python",
+      args: "main.py",
+      cwd: "./ai_service",
+      instances: 1,
+      exec_mode: "fork",
+      env: {
+        PORT: 5005,
+      },
+      watch: false,
+      error_file: "./logs/ai-err.log",
+      out_file: "./logs/ai-out.log",
+      log_date_format: "YYYY-MM-DD HH:mm:ss Z",
     }
   ]
 };

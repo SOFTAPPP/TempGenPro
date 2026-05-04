@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Trash2, Copy, RefreshCw, MessageSquare, Clock, Inbox as InboxIcon, ChevronLeft, Mail, AlertTriangle, Shield, Zap, Ghost } from 'lucide-react';
+import { Plus, Trash2, Copy, RefreshCw, MessageSquare, Clock, Inbox as InboxIcon, ChevronLeft, Mail, AlertTriangle, Shield, Zap, Ghost, Wand2, X } from 'lucide-react';
 import api from '../services/api';
+import aiApi from '../services/aiApi';
 import { socketService } from '../services/socket';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
@@ -77,6 +78,119 @@ const ConfirmationModal: React.FC<{
   </AnimatePresence>
 );
 
+const AiGeneratorModal: React.FC<{
+  show: boolean;
+  onClose: () => void;
+}> = ({ show, onClose }) => {
+  const [topic, setTopic] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<{ subject: string; body: string } | null>(null);
+  const { showNotification } = useNotification();
+
+  const handleGenerate = async () => {
+    if (!topic.trim()) return;
+    setLoading(true);
+    try {
+      const res = await aiApi.post('/generate-email', { topic });
+      setResult(res.data);
+      showNotification('Professional email generated successfully!');
+    } catch (err) {
+      console.error(err);
+      showNotification('Failed to generate email. Make sure AI service is running.', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    showNotification('Copied to clipboard');
+  };
+
+  return (
+    <AnimatePresence>
+      {show && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 4000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)' }}
+          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            className="glass-card"
+            style={{ position: 'relative', maxWidth: '600px', width: '100%', padding: '2.5rem', border: '1px solid var(--primary)', zIndex: 4001, overflowY: 'auto', maxHeight: '90vh' }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'var(--primary-glow)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Wand2 size={20} />
+                </div>
+                <h3 style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--text-bold)' }}>AI Email Generator</h3>
+              </div>
+              <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
+                <X size={24} />
+              </button>
+            </div>
+
+            <div style={{ marginBottom: '2rem' }}>
+              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-muted)', marginBottom: '0.75rem', textTransform: 'uppercase' }}>What is the email about?</label>
+              <textarea
+                value={topic}
+                onChange={(e) => setTopic(e.target.value)}
+                placeholder="e.g. Asking for a refund for a damaged product..."
+                style={{ width: '100%', padding: '1rem', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', color: 'var(--text-bold)', minHeight: '100px', outline: 'none', transition: 'border-color 0.2s' }}
+                onFocus={(e) => e.target.style.borderColor = 'var(--primary)'}
+                onBlur={(e) => e.target.style.borderColor = 'var(--border)'}
+              />
+            </div>
+
+            <button
+              onClick={handleGenerate}
+              disabled={loading || !topic.trim()}
+              className="btn btn-primary"
+              style={{ width: '100%', padding: '1rem', borderRadius: '12px', fontWeight: 900, marginBottom: '2rem' }}
+            >
+              {loading ? <RefreshCw size={20} className="animate-spin" /> : <><Wand2 size={18} /> GENERATE PROFESSIONAL EMAIL</>}
+            </button>
+
+            {result && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                style={{ background: 'rgba(0,0,0,0.2)', borderRadius: '16px', padding: '1.5rem', border: '1px solid var(--border-light)' }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                  <span style={{ fontSize: '0.7rem', fontWeight: 900, color: 'var(--primary)', textTransform: 'uppercase' }}>Generated Content</span>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button onClick={() => copyToClipboard(`Subject: ${result.subject}\n\n${result.body}`)} className="btn btn-secondary btn-sm" style={{ padding: '0.4rem 0.8rem', fontSize: '0.7rem' }}>
+                      <Copy size={14} /> COPY ALL
+                    </button>
+                  </div>
+                </div>
+                <div style={{ marginBottom: '1rem' }}>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: '0 0 0.5rem' }}>Subject:</p>
+                  <p style={{ fontWeight: 800, color: 'var(--text-bold)', margin: 0 }}>{result.subject}</p>
+                </div>
+                <div>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: '0 0 0.5rem' }}>Body:</p>
+                  <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1rem', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '0.9rem', color: 'var(--text)', whiteSpace: 'pre-wrap', maxHeight: '200px', overflowY: 'auto' }}>
+                    {result.body}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
+  );
+};
+
 const MAX_EMAILS = 5;
 
 const Inbox: React.FC = () => {
@@ -93,6 +207,7 @@ const Inbox: React.FC = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isGenerating, setIsGenerating] = useState(false);
   const [showCopyToast, setShowCopyToast] = useState(false);
+  const [showAiModal, setShowAiModal] = useState(false);
   const [socketStatus, setSocketStatus] = useState<'connected' | 'disconnected' | 'connecting'>('connecting');
 
   const [confirmState, setConfirmState] = useState<{
@@ -363,6 +478,11 @@ const Inbox: React.FC = () => {
         type={confirmState.type}
       />
 
+      <AiGeneratorModal 
+        show={showAiModal} 
+        onClose={() => setShowAiModal(false)} 
+      />
+
       <AnimatePresence>
         {showCopyToast && (
           <motion.div
@@ -445,6 +565,14 @@ const Inbox: React.FC = () => {
                   {isGenerating ? <RefreshCw size={16} className="animate-spin" /> : <Plus size={20} />}
                 </button>
               )}
+              <button 
+                className="btn btn-secondary btn-nav-round" 
+                onClick={() => setShowAiModal(true)} 
+                title="AI Email Generator"
+                style={{ width: '38px', height: '38px', borderRadius: '50%', color: 'var(--primary)' }}
+              >
+                <Wand2 size={20} />
+              </button>
             </div>
           </div>
           <div className="sidebar-content" style={{ padding: '1rem', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column' }}>
@@ -558,7 +686,29 @@ const Inbox: React.FC = () => {
                   </div>
                 </div>
                 <h2 style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--text-bold)', marginBottom: '1rem', letterSpacing: '-0.02em' }}>Initialize Interception</h2>
-                <p style={{ fontSize: '1rem', color: 'var(--text-muted)', maxWidth: '400px', lineHeight: 1.6 }}>Connect to a secure relay node from the terminal panel on the left to monitor decentralized data transmissions.</p>
+                <p style={{ fontSize: '1rem', color: 'var(--text-muted)', maxWidth: '400px', lineHeight: 1.6, marginBottom: '2.5rem' }}>Connect to a secure relay node from the terminal panel on the left to monitor decentralized data transmissions.</p>
+
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setShowAiModal(true)}
+                  className="btn btn-primary"
+                  style={{ 
+                    padding: '1.2rem 2.5rem', 
+                    borderRadius: '16px', 
+                    fontSize: '1rem', 
+                    fontWeight: 900, 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '12px',
+                    boxShadow: '0 0 30px var(--primary-glow)',
+                    background: 'linear-gradient(135deg, var(--primary) 0%, #8b5cf6 100%)',
+                    color: '#000',
+                    border: 'none'
+                  }}
+                >
+                  <Wand2 size={22} /> WRITE PROFESSIONAL EMAIL (AI)
+                </motion.button>
 
                 <div style={{ marginTop: '3rem', display: 'flex', gap: '2rem', opacity: 0.4 }}>
                   <div style={{ textAlign: 'center' }}><div style={{ fontSize: '1.2rem', fontWeight: 900, color: 'var(--text-bold)' }}>256-bit</div><p style={{ fontSize: '0.65rem', textTransform: 'uppercase', fontWeight: 800 }}>Encryption</p></div>
