@@ -251,7 +251,7 @@ const AdminDashboard: React.FC = () => {
       type: 'warning',
       onConfirm: async () => {
         try {
-          await api.delete(`/admin/emails/${emailId}`);
+          await api.delete(`/admin/temp-emails/${emailId}`);
           fetchData(); // Refresh data to show changes
           setConfirmState(prev => ({ ...prev, show: false }));
           showNotification('Relay Scrubbed Successfully.');
