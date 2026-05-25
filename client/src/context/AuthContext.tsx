@@ -41,8 +41,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const handleBan = (data: { message: string }) => {
         console.log(`[Socket] 🚨 BAN SIGNAL RECEIVED:`, data);
-        logout();
         window.location.href = '/suspended';
+      };
+
+      const handleRestore = (data: { message: string }) => {
+        console.log(`[Socket] 🟢 RESTORE SIGNAL RECEIVED:`, data);
+        window.location.href = '/inbox';
       };
 
       const handleDelete = (data: { message: string }) => {
@@ -52,11 +56,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       };
 
       socketService.on('user_banned', handleBan);
+      socketService.on('user_restored', handleRestore);
       socketService.on('user_deleted', handleDelete);
 
       return () => {
         console.log(`[Socket] 📵 Cleaning up listeners...`);
         socketService.off('user_banned');
+        socketService.off('user_restored');
         socketService.off('user_deleted');
       };
     }

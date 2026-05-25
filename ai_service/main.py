@@ -27,7 +27,7 @@ class EmailResponse(BaseModel):
     subject: str
     body: str
 
-@app.post("/generate-email", response_model=EmailResponse)
+@app.post("/ai/generate-email", response_model=EmailResponse)
 async def generate_email(request: EmailRequest):
     try:
         # System Prompt and Few-Shot Prompting
@@ -36,7 +36,7 @@ async def generate_email(request: EmailRequest):
             "Your goal is to generate a high-quality, professional email based on the provided topic. "
             "Return the response in a valid JSON format with 'subject' and 'body' keys."
         )
-        
+
         # Few-shot examples
         few_shot_examples = [
             {"role": "user", "content": "Topic: Resignation from current role"},
@@ -45,11 +45,12 @@ async def generate_email(request: EmailRequest):
             {"role": "assistant", "content": '{"subject": "Project Update Meeting Request", "body": "Hi [Colleague Name],\\n\\nI would like to schedule a brief meeting to discuss the latest updates on [Project Name]. Are you available at any time on [Day/Date]?\\n\\nLooking forward to hearing from you.\\n\\nBest regards,\\n[Your Name]"}'}
         ]
 
-        messages = [
+        from typing import Any, cast
+        messages = cast(Any, [
             {"role": "system", "content": system_prompt},
             *few_shot_examples,
             {"role": "user", "content": f"Topic: {request.topic}"}
-        ]
+        ])
 
         # Call OpenAI with specified parameters
         response = client.chat.completions.create(
@@ -62,7 +63,10 @@ async def generate_email(request: EmailRequest):
 
         # Parse and return JSON
         import json
-        content = json.loads(response.choices[0].message.content)
+        content_str = response.choices[0].message.content
+        if not content_str:
+            raise Exception("No content returned from OpenAI")
+        content = json.loads(content_str)
         return EmailResponse(
             subject=content.get("subject", "No Subject"),
             body=content.get("body", "No Body")

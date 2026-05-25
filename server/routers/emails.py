@@ -1,0 +1,155 @@
+from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel
+from typing import Optional
+import asyncio
+from utils.db import db
+from dependencies.auth import get_current_user, UserPayload
+from utils.email_generator import generate_unique_email
+from utils.admin_stats import sync_admin_stats
+
+router = APIRouter()
+
+class CreateEmailRequest(BaseModel):
+    type: Optional[str] = None
+    includePersona: Optional[bool] = False
+
+@router.get("")
+async def get_user_emails(current_user: UserPayload = Depends(get_current_user)):
+    emails = await db.tempemail.find_many(
+        where={
+            "userId": current_user.id,
+            "isActive": True
+        },
+        order={"createdAt": "desc"},
+        include={
+            "messages": True
+        }
+    )
+    
+    # Format to match Node response
+    formatted = []
+    for email in emails:
+        data = dict(email)
+        data["_count"] = {"messages": len(email.messages) if email.messages else 0}
+        data["createdAt"] = email.createdAt.isoformat() if email.createdAt else None
+        data["expiresAt"] = email.expiresAt.isoformat() if email.expiresAt else None
+        del data["messages"]
+        formatted.append(data)
+        
+    return formatted
+
+@router.post("/generate", status_code=status.HTTP_201_CREATED)
+async def create_email(req: CreateEmailRequest, current_user: UserPayload = Depends(get_current_user)):
+    user_id = current_user.id
+    user_role = current_user.role
+
+    if user_role != "ADMIN":
+        active_count = await db.tempemail.count(
+            where={"userId": user_id, "isActive": True}
+        )
+        if active_count >= 5:
+            raise HTTPException(
+                status_code=403,
+                detail="INVENTORY FULL: Free tier supports a maximum of 5 active relay nodes. Please disconnect an existing node to deploy a new one."
+            )
+
+    forced_domain = None
+    if user_role == "ADMIN":
+        if req.type == "social":
+            forced_domain = "mysocialrelay.com"
+        elif req.type == "main":
+            forced_domain = "tempgenpro.com"
+
+    email = await generate_unique_email(user_id, forced_domain, bool(req.includePersona))
+
+    # Trigger admin sync asynchronously
+    asyncio.create_task(sync_admin_stats())
+    
+    data = dict(email)
+    data["createdAt"] = email.createdAt.isoformat() if email.createdAt else None
+    data["expiresAt"] = email.expiresAt.isoformat() if email.expiresAt else None
+
+    return data
+
+@router.delete("/{email_id}")
+async def delete_email(email_id: int, current_user: UserPayload = Depends(get_current_user)):
+    await db.tempemail.update(
+        where={
+            "id": email_id
+        },
+        data={"isActive": False}
+    )
+    # Trigger admin sync
+    asyncio.create_task(sync_admin_stats())
+    return {"message": "Email deleted"}
+
+@router.get("/{email_id}/messages")
+async def get_email_messages(email_id: int, current_user: UserPayload = Depends(get_current_user)):
+    # Verify ownership
+    email_node = await db.tempemail.find_first(
+        where={"id": email_id, "userId": current_user.id}
+    )
+    if not email_node:
+        raise HTTPException(status_code=404, detail="Email not found")
+
+    messages = await db.message.find_many(
+        where={"tempEmailId": email_id},
+        order={"receivedAt": "desc"},
+        take=50
+    )
+
+    optimized_messages = []
+    for m in messages:
+        m_dict = dict(m)
+        m_dict["body"] = m.body[:200] + ("..." if len(m.body) > 200 else "")
+        m_dict["trackersBlocked"] = m.trackersBlocked or 0
+        m_dict["receivedAt"] = m.receivedAt.isoformat() if m.receivedAt else None
+        optimized_messages.append(m_dict)
+
+    return optimized_messages
+
+@router.get("/messages/{message_id}")
+async def get_message_detail(message_id: int, current_user: UserPayload = Depends(get_current_user)):
+    message = await db.message.find_first(
+        where={"id": message_id},
+        include={"tempEmail": True}
+    )
+    
+    if not message or not message.tempEmail or message.tempEmail.userId != current_user.id:
+        raise HTTPException(status_code=404, detail="Message not found")
+        
+    m_dict = dict(message)
+    m_dict["receivedAt"] = message.receivedAt.isoformat() if message.receivedAt else None
+    del m_dict["tempEmail"]
+    return m_dict
+
+@router.delete("/messages/{message_id}")
+async def delete_message(message_id: int, current_user: UserPayload = Depends(get_current_user)):
+    message = await db.message.find_first(
+        where={"id": message_id},
+        include={"tempEmail": True}
+    )
+    
+    if not message or not message.tempEmail or message.tempEmail.userId != current_user.id:
+        raise HTTPException(status_code=404, detail="Message not found or unauthorized")
+
+    await db.message.delete(where={"id": message_id})
+    return {"message": "Message deleted"}
+
+@router.post("/{email_id}/camouflage")
+async def toggle_camouflage(email_id: int, current_user: UserPayload = Depends(get_current_user)):
+    email_node = await db.tempemail.find_first(
+        where={"id": email_id, "userId": current_user.id}
+    )
+    if not email_node:
+        raise HTTPException(status_code=404, detail="Relay node not found")
+
+    updated = await db.tempemail.update(
+        where={"id": email_id},
+        data={"camouflageEnabled": not email_node.camouflageEnabled}
+    )
+    
+    updated_dict = dict(updated)
+    updated_dict["createdAt"] = updated.createdAt.isoformat() if updated.createdAt else None
+    updated_dict["expiresAt"] = updated.expiresAt.isoformat() if updated.expiresAt else None
+    return updated_dict

@@ -1,0 +1,12 @@
+fastapi
+uvicorn[standard]
+prisma
+python-socketio
+python-jose[cryptography]
+passlib[bcrypt]
+python-multipart
+python-dotenv
+slowapi
+mail-parser
+asyncpg
+email-validator
