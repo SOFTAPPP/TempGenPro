@@ -178,31 +178,92 @@ const cleanRawEmail = (email: string): string => {
 };
 
 const extractOtpFromText = (subject: string, body: string): string | null => {
+  const cleanBody = (text: string): string => {
+    if (!text) return '';
+    let clean = text.replace(/<(head|script|style|title)[^>]*>[\s\S]*?<\/\1>/gi, '');
+    clean = clean.replace(/<\/?[^>]+(>|$)/g, ' ');
+    clean = clean
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      .replace(/&apos;/g, "'");
+    return clean;
+  };
+
+  const clean = cleanBody(body);
+
+  const patterns = [
+    // Pattern 1: Hyphenated alphanumeric (e.g. WPW-YP3, G-123456)
+    /\b[a-zA-Z0-9]{2,6}-[a-zA-Z0-9]{2,6}\b/g,
+    // Pattern 2: Alphanumeric containing both letters and digits (e.g. A1B2C3)
+    /\b(?=[a-zA-Z]*\d)(?=\d*[a-zA-Z])[a-zA-Z0-9]{4,10}\b/g,
+    // Pattern 3: Pure digits (4 to 8 digits)
+    /\b\d{4,8}\b/g
+  ];
+
+  const yearBlacklist = ['2024', '2025', '2026', '2027', '2028', '2029', '2030'];
+
+  // Check subject first
   if (subject) {
-    const subjectMatch = subject.match(/\b\d{4,8}\b/);
-    if (subjectMatch) return subjectMatch[0];
-  }
-  if (!body) return null;
-  let clean = body.replace(/<(head|script|style|title)[^>]*>[\s\S]*?<\/\1>/gi, '');
-  clean = clean.replace(/<\/?[^>]+(>|$)/g, ' ');
-  clean = clean
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&apos;/g, "'");
-
-  const matches = clean.match(/\b\d{4,8}\b/g);
-  if (!matches) return null;
-
-  for (const match of matches) {
-    if (!['2024', '2025', '2026', '2027', '2028'].includes(match)) {
-      return match;
+    for (const pattern of patterns) {
+      const matches = subject.match(pattern);
+      if (matches) {
+        for (const match of matches) {
+          if (/^\d+$/.test(match)) {
+            if (!yearBlacklist.includes(match)) {
+              return match;
+            }
+          } else {
+            return match;
+          }
+        }
+      }
     }
   }
-  return matches[0];
+
+  // Check body
+  if (clean) {
+    for (const pattern of patterns) {
+      const matches = clean.match(pattern);
+      if (matches) {
+        for (const match of matches) {
+          if (/^\d+$/.test(match)) {
+            if (!yearBlacklist.includes(match)) {
+              return match;
+            }
+          } else {
+            return match;
+          }
+        }
+      }
+    }
+  }
+
+  // Fallback: check if subject has any digits
+  if (subject) {
+    const subjectDigits = subject.match(/\b\d{4,8}\b/g);
+    if (subjectDigits && subjectDigits.length > 0) {
+      return subjectDigits[0];
+    }
+  }
+
+  // Fallback: check if body has any digits (even if they are years)
+  if (clean) {
+    const bodyDigits = clean.match(/\b\d{4,8}\b/g);
+    if (bodyDigits && bodyDigits.length > 0) {
+      for (const match of bodyDigits) {
+        if (!yearBlacklist.includes(match)) {
+          return match;
+        }
+      }
+      return bodyDigits[0];
+    }
+  }
+
+  return null;
 };
 
 const ConfirmationModal: React.FC<{
@@ -1028,14 +1089,34 @@ const Inbox: React.FC = () => {
                                   <meta name="viewport" content="width=device-width, initial-scale=1.0">
                                   <base target="_blank">
                                   <style>
-                                    * { max-width: 100% !important; box-sizing: border-box !important; }
-                                    html, body { max-width: 100% !important; overflow-x: hidden !important; }
-                                    body { font-family: 'Inter', sans-serif; margin: 12px; color: #9ca3af; line-height: 1.6; background: transparent; word-wrap: break-word; word-break: break-word; overflow-wrap: break-word; }
-                                    table { width: 100% !important; table-layout: fixed !important; border-collapse: collapse !important; }
-                                    td, th { word-break: break-word !important; }
-                                    img { max-width: 100% !important; height: auto !important; }
-                                    a { color: #b68bf5; text-decoration: underline; word-break: break-all; }
-                                    p { margin-bottom: 1em; }
+                                    html, body {
+                                      margin: 0;
+                                      padding: 0;
+                                      background-color: #ffffff;
+                                      color: #222222;
+                                      max-width: 100% !important;
+                                    }
+                                    body {
+                                      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+                                      padding: 24px;
+                                      line-height: 1.5;
+                                      word-wrap: break-word;
+                                      word-break: break-word;
+                                      overflow-wrap: break-word;
+                                    }
+                                    /* Ensure image attachments or large header images don't overflow the page width */
+                                    img {
+                                      max-width: 100% !important;
+                                      height: auto !important;
+                                    }
+                                    a {
+                                      color: #b68bf5;
+                                      text-decoration: underline;
+                                    }
+                                    /* Allow email tables to size appropriately without forcing full-width column distortion */
+                                    table {
+                                      max-width: 100% !important;
+                                    }
                                   </style>
                                 </head>
                                 <body>${bodyToRender}</body>

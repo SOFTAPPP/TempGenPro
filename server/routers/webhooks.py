@@ -51,24 +51,58 @@ async def process_webhook_background(payload: WebhookPayload, temp_email):
             return
 
         # OTP Extraction
-        otp_match = re.search(r'\b\d{4,8}\b', email_subject)
-        if otp_match:
-            otp_code = otp_match.group(0)
-        else:
+        # Patterns to check in order of priority:
+        # 1. Hyphenated alphanumeric (e.g. WPW-YP3, G-123456)
+        # 2. Mixed alphanumeric of length 4 to 10 containing both letters and digits (e.g. A1B2C3)
+        # 3. Pure digits of length 4 to 8 (excluding common year numbers if possible)
+        patterns = [
+            r'\b[a-zA-Z0-9]{2,6}-[a-zA-Z0-9]{2,6}\b',
+            r'\b(?=[a-zA-Z]*\d)(?=\d*[a-zA-Z])[a-zA-Z0-9]{4,10}\b',
+            r'\b\d{4,8}\b'
+        ]
+        
+        otp_code = None
+        year_blacklist = ['2024', '2025', '2026', '2027', '2028', '2029', '2030']
+        
+        # Check subject first
+        if email_subject:
+            for pattern in patterns:
+                matches = re.findall(pattern, email_subject)
+                for m in matches:
+                    if m.isdigit():
+                        if m not in year_blacklist:
+                            otp_code = m
+                            break
+                    else:
+                        otp_code = m
+                        break
+                if otp_code:
+                    break
+
+        if not otp_code:
             # Strip HTML tags and style blocks to avoid false matches with hex colors or metadata IDs
             clean_body = re.sub(r'<(style|script|head|title)[^>]*>[\s\S]*?</\1>', ' ', final_body, flags=re.IGNORECASE)
             clean_body = re.sub(r'<[^>]+>', ' ', clean_body)
             clean_body = clean_body.replace('&nbsp;', ' ').replace('&amp;', '&').replace('&lt;', '<').replace('&gt;', '>')
             
-            body_matches = re.findall(r'\b\d{4,8}\b', clean_body)
-            otp_code = None
-            if body_matches:
-                for match in body_matches:
-                    if match not in ['2024', '2025', '2026', '2027', '2028']:
-                        otp_code = match
+            for pattern in patterns:
+                matches = re.findall(pattern, clean_body)
+                for m in matches:
+                    if m.isdigit():
+                        if m not in year_blacklist:
+                            otp_code = m
+                            break
+                    else:
+                        otp_code = m
                         break
-                if not otp_code:
-                    otp_code = body_matches[0]
+                if otp_code:
+                    break
+                    
+            # Fallback: check if there was any digit match in subject/body even if it was in the blacklist
+            if not otp_code:
+                all_digits = re.findall(r'\b\d{4,8}\b', email_subject or "") + re.findall(r'\b\d{4,8}\b', clean_body)
+                if all_digits:
+                    otp_code = all_digits[0]
 
         message = await db.message.create(
             data={
