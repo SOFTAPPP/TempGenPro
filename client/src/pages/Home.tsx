@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Shield, Zap, Mail, Copy, Star, ArrowRight, MessageSquare, Globe, HelpCircle } from 'lucide-react';
+import { Shield, Zap, Mail, Copy, Star, ArrowRight, Globe, HelpCircle } from 'lucide-react';
 import SmartLink from '../components/SmartLink';
 import SEO from '../components/SEO';
 
@@ -23,7 +23,7 @@ const Home: React.FC = () => {
       <SEO
         title="TempGenPro | Free Temporary Email Generator - Fast Temp Emails"
         description="TempGenPro provides instant temp emails and temporary email generators to protect your privacy. Generate secure disposable mail with our premium temp gen infrastructure and avoid spam."
-        keywords="temp emails, tempgen, temp gen, temporary email generators, temporary email, disposable email, anonymous email, temp mail, virtual whatsapp number, privacy protection, bypass social media verification"
+        keywords="temp emails, tempgen, temp gen, temporary email generators, temporary email, disposable email, anonymous email, temp mail, privacy protection, bypass social media verification, premium support"
       />
       {/* Hero Section */}
       <section className="hero-section" style={{ paddingTop: 'clamp(8rem, 15vh, 12rem)', paddingBottom: '3rem', paddingLeft: '1.5rem', paddingRight: '1.5rem', textAlign: 'center' }}>
@@ -323,12 +323,12 @@ const Home: React.FC = () => {
                 whileHover={{ y: -10 }}
                 style={{ background: 'rgba(0,0,0,0.3)', padding: '2.5rem', borderRadius: '24px', border: '1px solid var(--border)' }}
               >
-                <div style={{ width: '50px', height: '50px', borderRadius: '12px', background: 'rgba(37, 211, 102, 0.1)', color: '#25D366', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.5rem' }}>
-                  <MessageSquare size={24} />
+                <div style={{ width: '50px', height: '50px', borderRadius: '12px', background: 'rgba(182, 139, 245, 0.1)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.5rem' }}>
+                  <HelpCircle size={24} />
                 </div>
-                <h3 style={{ fontSize: '1.5rem', fontWeight: 900, marginBottom: '1rem' }}>Permanent WhatsApp</h3>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', lineHeight: 1.6 }}>Deploy exclusive, virtual WhatsApp numbers for permanent private Business communication without revealing your personal SIM details.</p>
-                <div style={{ marginTop: '1.5rem', fontSize: '0.75rem', fontWeight: 900, color: '#25D366', textTransform: 'uppercase' }}>Coming Soon</div>
+                <h3 style={{ fontSize: '1.5rem', fontWeight: 900, marginBottom: '1rem' }}>Priority Support</h3>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', lineHeight: 1.6 }}>Get direct assistance from our tech support specialists. Open a ticket to resolve service inquiries, reporting issues, or custom setups.</p>
+                <div style={{ marginTop: '1.5rem', fontSize: '0.75rem', fontWeight: 900, color: 'var(--primary)', textTransform: 'uppercase' }}>Available Now</div>
               </motion.div>
 
               <motion.div

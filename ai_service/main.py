@@ -37,7 +37,9 @@ class EmailResponse(BaseModel):
     subject: str
     body: str
 
+@app.post("/generate-email", response_model=EmailResponse)
 @app.post("/ai/generate-email", response_model=EmailResponse)
+# This handles both environments (with and without the /ai prefix in the proxy)
 async def generate_email(request: EmailRequest):
     try:
         # System Prompt instructing tone classification and detailed humanized composition

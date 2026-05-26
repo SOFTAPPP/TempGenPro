@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from utils.db import connect_db, disconnect_db
-from routers import auth, emails, webhooks, admin
+from routers import auth, emails, webhooks, admin, support
 from utils.socket_app import socket_app
 from middlewares.visitor_logger import VisitorLoggerMiddleware
 from utils.noise_engine import start_noise_engine
@@ -37,6 +37,7 @@ app.include_router(auth.router, prefix="/api/auth", tags=["Auth"])
 app.include_router(emails.router, prefix="/api/emails", tags=["Emails"])
 app.include_router(webhooks.router, prefix="/api/webhook", tags=["Webhooks"])
 app.include_router(admin.router, prefix="/api/admin", tags=["Admin"])
+app.include_router(support.router, prefix="/api/support", tags=["Support"])
 
 # Mount Socket.IO
 app.mount("/", socket_app)

@@ -21,6 +21,7 @@ const Privacy = lazy(() => import('./pages/Privacy'));
 const Terms = lazy(() => import('./pages/Terms'));
 const Suspended = lazy(() => import('./pages/Suspended'));
 const Deleted = lazy(() => import('./pages/Deleted'));
+const Support = lazy(() => import('./pages/Support'));
 
 const LoadingFallback = () => (
   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', width: '100%', background: 'var(--bg)' }}>
@@ -45,6 +46,7 @@ const AnimatedRoutes = () => {
           <Route path="/terms" element={<PageWrapper><Terms /></PageWrapper>} />
           <Route path="/suspended" element={<PageWrapper><Suspended /></PageWrapper>} />
           <Route path="/deleted" element={<PageWrapper><Deleted /></PageWrapper>} />
+          <Route path="/support" element={<PageWrapper><Support /></PageWrapper>} />
         </Routes>
       </AnimatePresence>
     </Suspense>

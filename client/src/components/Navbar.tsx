@@ -60,6 +60,7 @@ const Navbar: React.FC = () => {
             <SmartLink to="/features" className={`nav-link ${location.pathname === '/features' ? 'active' : ''}`}>Features</SmartLink>
             <SmartLink to="/privacy" className={`nav-link ${location.pathname === '/privacy' ? 'active' : ''}`}>Privacy</SmartLink>
             <SmartLink to="/terms" className={`nav-link ${location.pathname === '/terms' ? 'active' : ''}`}>Terms</SmartLink>
+            <SmartLink to="/support" className={`nav-link ${location.pathname === '/support' ? 'active' : ''}`}>Support</SmartLink>
 
             {isAuthenticated ? (
               <div className="nav-actions">
@@ -190,6 +191,7 @@ const Navbar: React.FC = () => {
                     { to: '/features', label: 'Features' },
                     { to: '/privacy', label: 'Privacy Policy' },
                     { to: '/terms', label: 'Terms' },
+                    { to: '/support', label: 'Support' },
                     ...(isAuthenticated && user?.role === 'ADMIN' ? [{ to: '/admin', label: 'Admin Dashboard' }] : []),
                     ...(isAuthenticated ? [{ to: '/inbox', label: 'Inbox' }, { to: '/profile', label: 'Profile' }] : []),
                     ...(!isAuthenticated ? [{ to: '/login', label: 'Login' }] : []),
