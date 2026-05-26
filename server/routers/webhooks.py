@@ -52,10 +52,23 @@ async def process_webhook_background(payload: WebhookPayload, temp_email):
 
         # OTP Extraction
         otp_match = re.search(r'\b\d{4,8}\b', email_subject)
-        if not otp_match:
-            otp_match = re.search(r'\b\d{4,8}\b', final_body)
-        
-        otp_code = otp_match.group(0) if otp_match else None
+        if otp_match:
+            otp_code = otp_match.group(0)
+        else:
+            # Strip HTML tags and style blocks to avoid false matches with hex colors or metadata IDs
+            clean_body = re.sub(r'<(style|script|head|title)[^>]*>[\s\S]*?</\1>', ' ', final_body, flags=re.IGNORECASE)
+            clean_body = re.sub(r'<[^>]+>', ' ', clean_body)
+            clean_body = clean_body.replace('&nbsp;', ' ').replace('&amp;', '&').replace('&lt;', '<').replace('&gt;', '>')
+            
+            body_matches = re.findall(r'\b\d{4,8}\b', clean_body)
+            otp_code = None
+            if body_matches:
+                for match in body_matches:
+                    if match not in ['2024', '2025', '2026', '2027', '2028']:
+                        otp_code = match
+                        break
+                if not otp_code:
+                    otp_code = body_matches[0]
 
         message = await db.message.create(
             data={

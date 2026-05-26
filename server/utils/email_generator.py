@@ -28,10 +28,9 @@ async def generate_unique_email(user_id=None, forced_domain=None, include_person
             if random.random() > 0.8:
                 local += str(random.randint(0, 99))
         elif rand_pattern < 0.8:
-            # Pattern 2: department/institutional
-            local = random.choice(DEPTS)
-            if random.random() > 0.6:
-                local += f"{random.randint(0, 99):02d}"
+            # Pattern 2: firstname + random 3-digit number (e.g., james482)
+            first = random.choice(FIRST_NAMES)
+            local = f"{first}{random.randint(100, 999)}"
         else:
             # Pattern 3: initial.lastname or first_initial
             first = random.choice(FIRST_NAMES)

@@ -93,6 +93,7 @@ body {
   padding: 0 1.5rem;
   width: 100%;
 }
+
 @media (max-width: 768px) {
   .container {
     padding: 0 1rem;
@@ -100,7 +101,7 @@ body {
 }
 
 .nav.scrolled {
-  background: rgba(9, 9, 11, 0.7) !important;
+  background: rgba(9, 9, 11, 0.95) !important;
   backdrop-filter: blur(20px) !important;
   -webkit-backdrop-filter: blur(20px) !important;
   border-bottom: 1px solid var(--border);
@@ -220,7 +221,7 @@ main {
   display: flex;
   align-items: center;
   z-index: 1000;
-  background: rgba(16, 17, 21, 0.4);
+  background: rgba(16, 17, 21, 0.95);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
@@ -714,8 +715,8 @@ main {
   display: grid !important;
   grid-template-columns: 350px 1fr !important;
   gap: 2rem !important;
-  height: calc(100vh - 160px) !important;
-  margin-top: 1rem;
+  height: calc(100vh - 125px) !important;
+  margin-top: 0;
 }
 
 .glass-sidebar {
@@ -783,22 +784,18 @@ main {
   .inbox-layout {
     display: flex !important;
     flex-direction: column !important;
-    height: calc(100vh - var(--nav-height-mobile)) !important;
+    height: calc(100vh - var(--nav-height)) !important;
     margin-top: 0 !important;
     margin-bottom: 0 !important;
     min-height: 0 !important;
     gap: 0 !important;
     border-radius: 0 !important;
     border: none !important;
-    position: fixed !important;
-    top: var(--nav-height-mobile);
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 100;
+    position: relative !important;
   }
 
-  .glass-sidebar, .glass-main {
+  .glass-sidebar,
+  .glass-main {
     width: 100% !important;
     height: 100% !important;
     border: none !important;
@@ -809,8 +806,14 @@ main {
   }
 }
 
+@media (max-width: 768px) {
+  .inbox-layout {
+    height: calc(100vh - var(--nav-height-mobile)) !important;
+  }
+}
+
 .inbox-container {
-  padding: 2rem 1.5rem;
+  padding: 0.5rem 1.5rem 1.5rem;
 }
 
 @media (max-width: 900px) {
@@ -948,6 +951,60 @@ main {
   flex-direction: column;
 }
 
+/* Inbox Header Layout */
+.inbox-email-header {
+  padding: 1.5rem 2.5rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.01);
+  gap: 1.5rem;
+}
+
+.inbox-header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.inbox-header-left-title {
+  flex: 1;
+  min-width: 0;
+}
+
+.inbox-email-title {
+  font-size: 1.1rem;
+  font-weight: 900;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text-bold);
+}
+
+.inbox-email-subtitle {
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.inbox-header-actions {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  flex-shrink: 0;
+}
+
 .mobile-hidden {
   display: none !important;
 }
@@ -956,16 +1013,23 @@ main {
   .mobile-hidden {
     display: flex !important;
   }
+
   .mobile-visible {
     display: none !important;
   }
 }
-@media (max-width: 900px) { .mobile-visible { display: flex !important; } }
+
+@media (max-width: 900px) {
+  .mobile-visible {
+    display: flex !important;
+  }
+}
 
 /* ============================================
    ADMIN DASHBOARD — MOBILE OVERHAUL
    ============================================ */
 @media (max-width: 768px) {
+
   /* Header */
   .admin-page-header h1 {
     font-size: 2rem !important;
@@ -1065,14 +1129,28 @@ main {
    INBOX — MOBILE OVERHAUL
    ============================================ */
 @media (max-width: 900px) {
-  /* Email header in detail/list view: word-break */
+  .inbox-email-header {
+    padding: 1.25rem 1.5rem !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.75rem !important;
+  }
+
+  .inbox-header-left {
+    width: 100% !important;
+  }
+
+  .inbox-header-actions {
+    width: 100% !important;
+    justify-content: flex-end !important;
+    flex-wrap: nowrap !important;
+    gap: 0.5rem !important;
+    margin-top: 0.25rem;
+  }
+
+  /* Email header in detail/list view */
   .inbox-email-title {
     font-size: 0.9rem !important;
-    word-break: break-all !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
-    max-width: calc(100vw - 120px) !important;
   }
 
   /* Gmail row: compact 2-line layout on mobile */
@@ -1104,6 +1182,7 @@ main {
   /* Message detail: reduce padding */
   .inbox-msg-detail-body {
     padding: 1.5rem 1rem !important;
+    overflow-x: hidden !important;
   }
 
   .inbox-msg-detail-body h1 {
@@ -1112,8 +1191,97 @@ main {
 
   /* OTP card */
   .otp-code-display {
-    font-size: 2.5rem !important;
-    letter-spacing: 0.2em !important;
+    font-size: 2rem !important;
+    letter-spacing: 0.15em !important;
+    max-width: 100% !important;
+    overflow-wrap: break-word !important;
+  }
+
+  /* Detail View Header & Sender */
+  .inbox-msg-detail-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 1rem !important;
+    margin-bottom: 2rem !important;
+    padding-bottom: 1.5rem !important;
+    width: 100% !important;
+  }
+
+  .inbox-msg-detail-sender {
+    width: 100% !important;
+  }
+
+  .inbox-msg-detail-sender-text {
+    width: calc(100% - 60px) !important;
+    min-width: 0 !important;
+  }
+
+  .inbox-msg-detail-time {
+    text-align: left !important;
+    padding-left: 4.25rem !important;
+    width: 100% !important;
+  }
+
+  /* OTP Card Wrapper and Buttons */
+  .otp-card {
+    padding: 1.5rem 1rem !important;
+    margin-bottom: 2rem !important;
+    border-radius: 16px !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .otp-title {
+    font-size: 0.65rem !important;
+    letter-spacing: 0.15em !important;
+    margin-bottom: 1rem !important;
+  }
+
+  .otp-btn {
+    margin-top: 1.5rem !important;
+    padding: 0.8rem 2rem !important;
+    width: 100% !important;
+  }
+
+  /* Content Text & Topbar */
+  .inbox-msg-content-text {
+    padding: 1.25rem !important;
+    font-size: 1.05rem !important;
+  }
+
+  .inbox-msg-detail-topbar {
+    padding: 1rem !important;
+    gap: 1rem !important;
+  }
+
+  /* Truncate sender, subject, and snippet in mobile list rows to prevent side-scrolling */
+  .gmail-row-sender {
+    width: auto !important;
+    max-width: 100% !important;
+    font-size: 0.85rem !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    display: block !important;
+  }
+
+  .gmail-row-body {
+    flex-direction: column !important;
+    gap: 0.2rem !important;
+    width: 100% !important;
+    overflow: hidden !important;
+  }
+
+  .gmail-subject,
+  .gmail-body-snippet {
+    max-width: 100% !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    display: block !important;
+  }
+
+  .gmail-list {
+    overflow-x: hidden !important;
   }
 }
-

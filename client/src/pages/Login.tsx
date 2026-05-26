@@ -47,7 +47,7 @@ const Login: React.FC = () => {
         navigate('/suspended');
         return;
       }
-      const msg = err.response?.data?.error || 'Login failed';
+      const msg = err.response?.data?.detail || err.response?.data?.error || 'Incorrect or invalid credentials';
       setError(msg);
       showNotification(msg, 'error');
     } finally {
