@@ -3,7 +3,6 @@ import { AlertTriangle, ChevronLeft, Clock, Copy, Ghost, Inbox as InboxIcon, Mai
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
-import aiApi from '../services/aiApi';
 import api from '../services/api';
 import { socketService } from '../services/socket';
 
@@ -252,6 +251,40 @@ const ConfirmationModal: React.FC<{
   </AnimatePresence>
 );
 
+const parseStreamedEmail = (text: string) => {
+  let subject = '';
+  let body = '';
+  
+  // Clean up any potential markdown wraps
+  let cleanText = text;
+  if (cleanText.startsWith('```')) {
+    cleanText = cleanText.replace(/^```[a-zA-Z]*\n/, '').replace(/\n```$/, '');
+  }
+
+  const subjectMatch = cleanText.match(/SUBJECT:\s*/i);
+  const bodyMatch = cleanText.match(/\n?BODY:\s*\n?/i);
+  
+  if (subjectMatch) {
+    const subjectStart = subjectMatch.index! + subjectMatch[0].length;
+    if (bodyMatch) {
+      const bodyStart = bodyMatch.index! + bodyMatch[0].length;
+      subject = cleanText.substring(subjectStart, bodyMatch.index!).trim();
+      body = cleanText.substring(bodyStart).trim();
+    } else {
+      subject = cleanText.substring(subjectStart).trim();
+    }
+  } else {
+    if (bodyMatch) {
+      const bodyStart = bodyMatch.index! + bodyMatch[0].length;
+      body = cleanText.substring(bodyStart).trim();
+    } else {
+      subject = cleanText.trim();
+    }
+  }
+  
+  return { subject, body };
+};
+
 const AiGeneratorModal: React.FC<{
   show: boolean;
   onClose: () => void;
@@ -264,9 +297,38 @@ const AiGeneratorModal: React.FC<{
   const handleGenerate = async () => {
     if (!topic.trim()) return;
     setLoading(true);
+    setResult({ subject: '', body: '' });
     try {
-      const res = await aiApi.post('/generate-email', { topic });
-      setResult(res.data);
+      const AI_API_BASE_URL = import.meta.env.VITE_AI_API_URL || 'http://localhost:5005';
+      const response = await fetch(`${AI_API_BASE_URL}/generate-email`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ topic }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server returned error: ${response.statusText}`);
+      }
+
+      if (!response.body) {
+        throw new Error('No response body received from server.');
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder('utf-8');
+      let accumulatedText = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        accumulatedText += decoder.decode(value, { stream: true });
+        
+        const { subject, body } = parseStreamedEmail(accumulatedText);
+        setResult({ subject, body });
+      }
+
       showNotification('Professional email generated successfully!');
     } catch (err) {
       console.error(err);
