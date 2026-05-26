@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Shield, MessageSquare, Users, Search, ChevronDown, ChevronUp, RefreshCw, Activity, Globe, Trash2, Edit2, Key, Save, X, AlertTriangle, Eye, EyeOff } from 'lucide-react';
+import { Shield, MessageSquare, Users, Search, ChevronDown, ChevronUp, RefreshCw, Activity, Globe, Trash2, Edit2, Key, Save, X, AlertTriangle, Eye, EyeOff, Copy } from 'lucide-react';
 import api from '../services/api';
 import { socketService } from '../services/socket';
 import { useAuth } from '../context/AuthContext';
@@ -27,9 +27,254 @@ interface FullUser {
       subject: string;
       body: string;
       receivedAt: string;
+      otpCode?: string;
+      trackersBlocked?: number;
     }[];
   }[];
 }
+
+const formatSender = (sender: string, subject?: string): string => {
+  if (!sender) return 'Unknown';
+
+  const parts = sender.split('@');
+  if (parts.length < 2) return sender;
+
+  const localPart = parts[0];
+  const domainPart = parts[1].toLowerCase();
+
+  if (subject) {
+    const knownBrandsInSubject = [
+      'ChatGPT', 'Blackbox AI', 'BlackboxAI', 'GitHub', 'LinkedIn', 'Google', 'Amazon',
+      'Facebook', 'Netflix', 'Discord', 'Slack', 'Stripe', 'PayPal', 'Steam', 'Microsoft',
+      'OpenAI', 'Apple', 'Spotify', 'Twitter', 'Instagram', 'Zoom', 'Adobe', 'Figma',
+      'Vercel', 'Netlify', 'Heroku', 'DigitalOcean', 'Cloudflare', 'AWS', 'Atlassian'
+    ];
+    for (const brand of knownBrandsInSubject) {
+      const escaped = brand.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+      const regex = new RegExp(`\\b${escaped}\\b`, 'i');
+      if (regex.test(subject)) {
+        return brand === 'BlackboxAI' ? 'Blackbox AI' : brand;
+      }
+    }
+  }
+
+  const isSystemLocal = /^[0-9a-f]{8,}[-+]|bounces|bounce|notification|noreply|no-reply/i.test(localPart) || localPart.length > 25;
+
+  const getFriendlyDomainName = (domain: string): string => {
+    let clean = domain.replace(/^(send|bounce|bounces|mail|email|reply|notification|notifications|info|support|alert|alerts|marketing|news|newsletter|msg|hello|service|services|aws|ses)\./i, '');
+    const domainParts = clean.split('.');
+    if (domainParts.length >= 2) {
+      let mainName = domainParts[domainParts.length - 2];
+      if (['co', 'com', 'org', 'net', 'edu', 'gov'].includes(mainName) && domainParts.length >= 3) {
+        mainName = domainParts[domainParts.length - 3];
+      }
+      return mainName;
+    }
+    return domainParts[0] || '';
+  };
+
+  const friendlyDomain = getFriendlyDomainName(domainPart);
+
+  const capitalize = (str: string): string => {
+    if (!str) return '';
+    const mappings: Record<string, string> = {
+      'blackboxai': 'Blackbox AI',
+      'openai': 'OpenAI',
+      'chatgpt': 'ChatGPT',
+      'github': 'GitHub',
+      'google': 'Google',
+      'linkedin': 'LinkedIn',
+      'facebook': 'Facebook',
+      'instagram': 'Instagram',
+      'twitter': 'Twitter',
+      'x': 'X',
+      'netflix': 'Netflix',
+      'spotify': 'Spotify',
+      'amazon': 'Amazon',
+      'microsoft': 'Microsoft',
+      'apple': 'Apple',
+      'slack': 'Slack',
+      'discord': 'Discord',
+      'zoom': 'Zoom',
+      'stripe': 'Stripe',
+      'paypal': 'PayPal'
+    };
+    const lower = str.toLowerCase();
+    if (mappings[lower]) return mappings[lower];
+
+    return str.split(/[-_]/).map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+  };
+
+  if (isSystemLocal && friendlyDomain) {
+    return capitalize(friendlyDomain);
+  }
+
+  if (!isSystemLocal) {
+    const genericLocals = [
+      'support', 'info', 'noreply', 'no-reply', 'contact', 'hello', 'admin', 'billing',
+      'jobs', 'careers', 'help', 'team', 'feedback', 'security', 'hr', 'reply', 'replies',
+      'service', 'services', 'alert', 'alerts', 'notification', 'notifications', 'news',
+      'newsletter', 'marketing', 'sales', 'orders', 'updates', 'update', 'verify',
+      'verification', 'otp', 'auth', 'register', 'confirm', 'mail', 'email', 'postmaster'
+    ];
+    if (genericLocals.includes(localPart.toLowerCase()) && friendlyDomain) {
+      return capitalize(friendlyDomain);
+    }
+    return capitalize(localPart);
+  }
+  return friendlyDomain ? capitalize(friendlyDomain) : capitalize(localPart);
+};
+
+const cleanRawEmail = (email: string): string => {
+  if (!email) return '';
+  let cleanEmail = email;
+  const match = email.match(/<([^>]+)>/);
+  if (match) {
+    cleanEmail = match[1];
+  }
+  const parts = cleanEmail.split('@');
+  if (parts.length < 2) return cleanEmail;
+  const localPart = parts[0];
+  const domain = parts[1];
+
+  const isSystemLocal = /^[0-9a-f]{8,}[-+]|bounces|bounce|notification|noreply|no-reply/i.test(localPart) || localPart.length > 25;
+  if (isSystemLocal) {
+    if (localPart.toLowerCase().startsWith('bounces') || localPart.toLowerCase().startsWith('bounce')) {
+      return `bounce@${domain}`;
+    }
+    if (localPart.toLowerCase().startsWith('noreply') || localPart.toLowerCase().startsWith('no-reply')) {
+      return `noreply@${domain}`;
+    }
+    return `service@${domain}`;
+  }
+  return cleanEmail;
+};
+
+const getEmailBodyToRender = (body: string): string => {
+  if (!body) return '';
+  if (body.includes('--- mail_boundary ---')) {
+    const parts = body.split('--- mail_boundary ---');
+    const htmlPart = parts.find(p => /<\/?[a-z][\s\S]*>/i.test(p) || p.includes('<!DOCTYPE'));
+    if (htmlPart) {
+      return htmlPart.trim();
+    }
+    const textPart = parts.find(p => p.trim().length > 0);
+    return textPart ? textPart.trim() : body;
+  }
+  return body;
+};
+
+const extractOtpFromText = (subject: string, body: string): string | null => {
+  const cleanBody = (text: string): string => {
+    if (!text) return '';
+    let clean = text.replace(/<(head|script|style|title)[^>]*>[\s\S]*?<\/\1>/gi, '');
+    clean = clean.replace(/<\/?[^>]+(>|$)/g, ' ');
+    clean = clean
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      .replace(/&apos;/g, "'");
+    return clean;
+  };
+
+  const clean = cleanBody(body);
+
+  const patterns = [
+    // Pattern 1: Hyphenated alphanumeric (e.g. WPW-YP3, G-123456)
+    /\b[a-zA-Z0-9]{2,6}-[a-zA-Z0-9]{2,6}\b/g,
+    // Pattern 2: Alphanumeric containing both letters and digits (e.g. A1B2C3)
+    /\b(?=[a-zA-Z]*\d)(?=\d*[a-zA-Z])[a-zA-Z0-9]{4,10}\b/g,
+    // Pattern 3: Pure digits (4 to 8 digits)
+    /\b\d{4,8}\b/g
+  ];
+
+  const yearBlacklist = ['2024', '2025', '2026', '2027', '2028', '2029', '2030'];
+
+  // Check subject first
+  if (subject) {
+    for (const pattern of patterns) {
+      const matches = subject.match(pattern);
+      if (matches) {
+        for (const match of matches) {
+          if (/^\d+$/.test(match)) {
+            if (!yearBlacklist.includes(match)) {
+              return match;
+            }
+          } else {
+            return match;
+          }
+        }
+      }
+    }
+  }
+
+  // Check body
+  if (clean) {
+    for (const pattern of patterns) {
+      const matches = clean.match(pattern);
+      if (matches) {
+        for (const match of matches) {
+          if (/^\d+$/.test(match)) {
+            if (!yearBlacklist.includes(match)) {
+              return match;
+            }
+          } else {
+            return match;
+          }
+        }
+      }
+    }
+  }
+
+  // Fallback: check if subject has any digits
+  if (subject) {
+    const subjectDigits = subject.match(/\b\d{4,8}\b/g);
+    if (subjectDigits && subjectDigits.length > 0) {
+      return subjectDigits[0];
+    }
+  }
+
+  // Fallback: check if body has any digits (even if they are years)
+  if (clean) {
+    const bodyDigits = clean.match(/\b\d{4,8}\b/g);
+    if (bodyDigits && bodyDigits.length > 0) {
+      for (const match of bodyDigits) {
+        if (!yearBlacklist.includes(match)) {
+          return match;
+        }
+      }
+      return bodyDigits[0];
+    }
+  }
+
+  return null;
+};
+
+const renderMessageBody = (text: string) => {
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  const parts = text.split(urlRegex);
+
+  return parts.map((part, index) => {
+    if (part.match(urlRegex)) {
+      return (
+        <a
+          key={index}
+          href={part}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ color: 'var(--primary)', textDecoration: 'underline', wordBreak: 'break-all' }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {part}
+        </a>
+      );
+    }
+    return part;
+  });
+};
 
 interface Stats {
   totalUsers: number;
@@ -711,25 +956,112 @@ const AdminDashboard: React.FC = () => {
                                           <p style={{ fontStyle: 'italic', color: 'var(--text-muted)' }}>No packets intercepted yet.</p>
                                         ) : (
                                           <div style={{ display: 'grid', gap: '1rem' }}>
-                                            {te.messages.map(msg => (
-                                              <div key={msg.id} style={{ background: 'var(--bg-tertiary)', padding: '1.5rem', borderRadius: '16px', border: '1px solid var(--border)' }}>
-                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                                                  <span style={{ fontWeight: 800, color: 'var(--primary)', fontSize: '0.9rem' }}>{msg.sender}</span>
-                                                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{new Date(msg.receivedAt).toLocaleString()}</span>
-                                                    <button
-                                                      onClick={() => handleDeleteMessage(msg.id)}
-                                                      className="btn btn-icon btn-sm"
-                                                      style={{ color: '#ef4444', background: 'transparent', padding: 0 }}
-                                                    >
-                                                      <Trash2 size={14} />
-                                                    </button>
+                                            {te.messages.map(msg => {
+                                              const bodyToRender = getEmailBodyToRender(msg.body);
+                                              const otpToRender = extractOtpFromText(msg.subject, bodyToRender) || msg.otpCode || null;
+                                              const isHtml = /<\/?[a-z][\s\S]*>/i.test(bodyToRender) || bodyToRender.includes('<!DOCTYPE');
+
+                                              return (
+                                                <div key={msg.id} style={{ background: 'var(--bg-tertiary)', padding: '1.5rem', borderRadius: '16px', border: '1px solid var(--border)' }}>
+                                                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                      <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--primary)', color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '0.9rem', flexShrink: 0 }}>
+                                                        {formatSender(msg.sender, msg.subject)[0].toUpperCase()}
+                                                      </div>
+                                                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                                        <span style={{ fontWeight: 900, color: 'var(--text-bold)', fontSize: '0.95rem', lineHeight: '1.2' }}>{formatSender(msg.sender, msg.subject)}</span>
+                                                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'monospace', lineHeight: '1.2' }}>{cleanRawEmail(msg.sender)}</span>
+                                                      </div>
+                                                    </div>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                                      <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{new Date(msg.receivedAt).toLocaleString()}</span>
+                                                      <button
+                                                        onClick={() => handleDeleteMessage(msg.id)}
+                                                        className="btn btn-icon btn-sm"
+                                                        style={{ color: '#ef4444', background: 'transparent', padding: 0 }}
+                                                      >
+                                                        <Trash2 size={14} />
+                                                      </button>
+                                                    </div>
+                                                  </div>
+                                                  <div style={{ fontWeight: 900, marginBottom: '1.5rem', color: 'var(--text-bold)' }}>{msg.subject}</div>
+
+                                                  {otpToRender && (
+                                                    <div className="otp-card glass-card" style={{ padding: '1.5rem', borderRadius: '16px', border: '2px solid var(--primary)', marginBottom: '1.5rem', textAlign: 'center', background: 'rgba(182, 139, 245, 0.03)' }}>
+                                                      <p className="otp-title" style={{ fontSize: '0.65rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.3em', marginBottom: '0.75rem', color: 'var(--primary)' }}>SECURITY VERIFICATION CODE</p>
+                                                      <div className="otp-code-display" style={{ fontSize: '2.5rem', fontWeight: 900, letterSpacing: '0.2em', fontFamily: 'monospace', color: 'var(--text-bold)', textShadow: '0 0 20px var(--primary-glow)' }}>{otpToRender}</div>
+                                                      <button onClick={() => { navigator.clipboard.writeText(otpToRender); showNotification('Copied to clipboard'); }} className="btn btn-primary otp-btn" style={{ marginTop: '1rem', padding: '0.5rem 1.5rem', borderRadius: '10px', fontSize: '0.8rem', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                                        <Copy size={14} /> COPY CODE
+                                                      </button>
+                                                    </div>
+                                                  )}
+
+                                                  {msg.trackersBlocked !== undefined && msg.trackersBlocked > 0 && (
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '1rem', color: '#10b981', fontSize: '0.75rem', fontWeight: 800 }}>
+                                                      <Shield size={12} fill="#10b981" fillOpacity={0.2} /> {msg.trackersBlocked} TRACKERS PURGED FROM INGESTION
+                                                    </div>
+                                                  )}
+
+                                                  <div style={{ borderRadius: '12px', background: 'rgba(255, 255, 255, 0.01)', border: '1px solid var(--border-light)', overflow: 'hidden' }}>
+                                                    {isHtml ? (
+                                                      <div style={{ background: '#16171d', height: '450px', width: '100%' }}>
+                                                        <iframe
+                                                          title="Packet Content"
+                                                          srcDoc={`
+                                                            <html>
+                                                              <head>
+                                                                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                                                                <base target="_blank">
+                                                                <style>
+                                                                  html, body {
+                                                                    margin: 0;
+                                                                    padding: 0;
+                                                                    background-color: #ffffff;
+                                                                    color: #222222;
+                                                                    max-width: 100% !important;
+                                                                  }
+                                                                  body {
+                                                                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+                                                                    padding: 20px;
+                                                                    line-height: 1.5;
+                                                                    word-wrap: break-word;
+                                                                    word-break: break-word;
+                                                                    overflow-wrap: break-word;
+                                                                  }
+                                                                  img {
+                                                                    max-width: 100% !important;
+                                                                    height: auto !important;
+                                                                  }
+                                                                  a {
+                                                                    color: #b68bf5;
+                                                                    text-decoration: underline;
+                                                                  }
+                                                                  table {
+                                                                    max-width: 100% !important;
+                                                                  }
+                                                                </style>
+                                                              </head>
+                                                              <body>${bodyToRender}</body>
+                                                            </html>
+                                                          `}
+                                                          sandbox="allow-popups allow-popups-to-escape-sandbox"
+                                                          style={{
+                                                            width: '100%',
+                                                            height: '100%',
+                                                            border: 'none',
+                                                            display: 'block'
+                                                          }}
+                                                        />
+                                                      </div>
+                                                    ) : (
+                                                      <div style={{ fontSize: '0.95rem', lineHeight: 1.7, color: 'var(--text)', whiteSpace: 'pre-wrap', padding: '1.25rem', overflowWrap: 'break-word', wordBreak: 'break-all' }}>
+                                                        {renderMessageBody(bodyToRender)}
+                                                      </div>
+                                                    )}
                                                   </div>
                                                 </div>
-                                                <div style={{ fontWeight: 900, marginBottom: '1rem' }}>{msg.subject}</div>
-                                                <div style={{ background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '12px', fontSize: '0.9rem', color: 'var(--text)', whiteSpace: 'pre-wrap' }}>{msg.body}</div>
-                                              </div>
-                                            ))}
+                                              );
+                                            })}
                                           </div>
                                         )}
                                       </div>
