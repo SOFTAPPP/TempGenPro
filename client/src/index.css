@@ -549,7 +549,8 @@ main {
   transition: var(--transition);
 }
 
-.feature-card:hover .feature-icon-wrapper {
+.feature-card:hover .feature-icon-wrapper,
+.feature-card.active .feature-icon-wrapper {
   background: var(--primary);
   color: #101115;
   transform: scale(1.1);
@@ -577,6 +578,16 @@ main {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-color: rgba(255, 255, 255, 0.1);
+}
+
+.preview-card-btn {
+  width: 100%;
+  border-radius: 16px;
+  padding: clamp(0.8rem, 2.5vw, 1.2rem) 1.5rem !important;
+  font-size: clamp(0.9rem, 2.5vw, 1.1rem) !important;
+  white-space: normal !important;
+  text-align: center;
+  word-break: break-word;
 }
 
 .preview-card-header {
@@ -1303,7 +1314,7 @@ main {
   width: 100%;
 }
 
-.oauth-google-wrapper > div {
+.oauth-google-wrapper>div {
   width: 100% !important;
   display: flex;
   justify-content: center;

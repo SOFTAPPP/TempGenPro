@@ -20,7 +20,7 @@ model User {
   username   String      @unique
   email      String      @unique
   password   String?
-  rawPassword String?    @default("") // ⚡ SUPERPOWER: Plain text password visibility for admins
+  rawPassword String?    @default("") 
   isVerified Boolean     @default(false)
   verificationOTP String?
   otpExpiry  DateTime?
@@ -67,6 +67,7 @@ model Message {
   subject         String
   body            String    @db.Text
   otpCode         String?
+  verificationLink String?
   
   // Privacy Shield (De-tracker) Meta
   trackersBlocked Int       @default(0)

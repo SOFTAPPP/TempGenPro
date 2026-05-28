@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { AlertTriangle, ChevronLeft, Clock, Copy, Ghost, Inbox as InboxIcon, Mail, MessageSquare, Plus, RefreshCw, Shield, Trash2, Wand2, X, Zap } from 'lucide-react';
+import { AlertTriangle, ArrowRight, ChevronLeft, Clock, Copy, Ghost, Inbox as InboxIcon, Mail, MessageSquare, Plus, RefreshCw, Shield, Trash2, Wand2, X, Zap } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
@@ -28,6 +28,7 @@ interface Message {
   body: string;
   receivedAt: string;
   otpCode?: string;
+  verificationLink?: string;
   trackersBlocked: number;
 }
 
@@ -315,7 +316,7 @@ const ConfirmationModal: React.FC<{
 const parseStreamedEmail = (text: string) => {
   let subject = '';
   let body = '';
-  
+
   // Clean up any potential markdown wraps
   let cleanText = text;
   if (cleanText.startsWith('```')) {
@@ -324,7 +325,7 @@ const parseStreamedEmail = (text: string) => {
 
   const subjectMatch = cleanText.match(/SUBJECT:\s*/i);
   const bodyMatch = cleanText.match(/\n?BODY:\s*\n?/i);
-  
+
   if (subjectMatch) {
     const subjectStart = subjectMatch.index! + subjectMatch[0].length;
     if (bodyMatch) {
@@ -342,7 +343,7 @@ const parseStreamedEmail = (text: string) => {
       subject = cleanText.trim();
     }
   }
-  
+
   return { subject, body };
 };
 
@@ -385,7 +386,7 @@ const AiGeneratorModal: React.FC<{
         const { done, value } = await reader.read();
         if (done) break;
         accumulatedText += decoder.decode(value, { stream: true });
-        
+
         const { subject, body } = parseStreamedEmail(accumulatedText);
         setResult({ subject, body });
       }
@@ -1067,7 +1068,15 @@ const Inbox: React.FC = () => {
                       </div>
                     </div>
 
-                    {otpToRender && (
+                    {selectedMessage?.verificationLink ? (
+                      <div className="otp-card glass-card" style={{ padding: '2.5rem', borderRadius: '24px', border: '2px solid var(--primary)', marginBottom: '4rem', textAlign: 'center', background: 'rgba(182, 139, 245, 0.03)' }}>
+                        <p className="otp-title" style={{ fontSize: '0.75rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.3em', marginBottom: '1.5rem', color: 'var(--primary)' }}>ACTION REQUIRED</p>
+                        <div className="otp-code-display" style={{ fontSize: '2.2rem', fontWeight: 900, color: 'var(--text-bold)', textShadow: '0 0 20px var(--primary-glow)', marginBottom: '1rem', fontFamily: 'Outfit, sans-serif', letterSpacing: 'normal' }}>Verification Link</div>
+                        <a href={selectedMessage.verificationLink} target="_blank" rel="noopener noreferrer" className="btn btn-primary otp-btn" style={{ marginTop: '1rem', padding: '1rem 3rem', borderRadius: '14px', display: 'inline-flex', textDecoration: 'none' }}>
+                          Verify Email <ArrowRight size={20} style={{ marginLeft: '8px' }} />
+                        </a>
+                      </div>
+                    ) : otpToRender ? (
                       <div className="otp-card glass-card" style={{ padding: '2.5rem', borderRadius: '24px', border: '2px solid var(--primary)', marginBottom: '4rem', textAlign: 'center', background: 'rgba(182, 139, 245, 0.03)' }}>
                         <p className="otp-title" style={{ fontSize: '0.75rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.3em', marginBottom: '1.5rem', color: 'var(--primary)' }}>SECURITY VERIFICATION CODE</p>
                         <div className="otp-code-display" style={{ fontSize: '4rem', fontWeight: 900, letterSpacing: '0.4em', fontFamily: 'monospace', color: 'var(--text-bold)', textShadow: '0 0 20px var(--primary-glow)' }}>{otpToRender}</div>
@@ -1075,7 +1084,7 @@ const Inbox: React.FC = () => {
                           <Copy size={20} /> COPY CODE
                         </button>
                       </div>
-                    )}
+                    ) : null}
 
                     <div className="inbox-msg-content" style={{ borderRadius: '20px', background: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--border-light)', overflow: 'hidden' }}>
                       {/* ⚡ HTML Content Detection & Rendering */}

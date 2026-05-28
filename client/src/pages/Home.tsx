@@ -1,12 +1,41 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Shield, Zap, Mail, Copy, Star, ArrowRight, Globe, HelpCircle } from 'lucide-react';
-import SmartLink from '../components/SmartLink';
+import { AnimatePresence, motion } from 'framer-motion';
+import { ArrowRight, Copy, Globe, HelpCircle, Mail, Shield, Star, Zap } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 import SEO from '../components/SEO';
+import SmartLink from '../components/SmartLink';
 
 const Home: React.FC = () => {
   const [tempEmail, setTempEmail] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [activeIndex, setActiveIndex] = useState<number>(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const cards = document.querySelectorAll('.feature-card');
+      let closestIndex = 0;
+      let closestDistance = Infinity;
+      const viewportCenter = window.innerHeight / 2;
+
+      cards.forEach((card, index) => {
+        const rect = card.getBoundingClientRect();
+        const cardCenter = rect.top + rect.height / 2;
+        const distance = Math.abs(cardCenter - viewportCenter);
+        if (distance < closestDistance) {
+          closestDistance = distance;
+          closestIndex = index;
+        }
+      });
+
+      setActiveIndex(closestIndex);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
   const generatePreview = () => {
     setLoading(true);
@@ -118,7 +147,7 @@ const Home: React.FC = () => {
                 </div>
 
                 <div style={{ marginTop: '3.5rem' }}>
-                  <SmartLink to="/signup" className="btn btn-primary" style={{ width: '100%', padding: '1.2rem', fontSize: '1.1rem', borderRadius: '16px' }}>
+                  <SmartLink to="/signup" className="btn btn-primary preview-card-btn">
                     Secure This Relay Permanently <ArrowRight size={20} />
                   </SmartLink>
                 </div>
@@ -161,7 +190,7 @@ const Home: React.FC = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="card feature-card"
+              className={`card feature-card ${activeIndex === i ? 'active' : ''}`}
             >
               <div className="feature-icon-wrapper">
                 {f.icon}
