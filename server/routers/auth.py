@@ -185,9 +185,6 @@ async def login(req: LoginRequest):
     if not verify_password(req.password, user.password):
         raise HTTPException(status_code=400, detail="Invalid password")
         
-    if not user.isVerified:
-        raise HTTPException(status_code=403, detail="Account not verified. Please verify your email first.")
-
     token = jwt.encode(
         {"id": user.id, "username": user.username, "role": user.role},
         JWT_SECRET,
