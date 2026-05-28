@@ -10,3 +10,6 @@ slowapi
 mail-parser
 asyncpg
 email-validator
+google-auth
+httpx
+requests

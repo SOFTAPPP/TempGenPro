@@ -19,8 +19,15 @@ model User {
   id         Int         @id @default(autoincrement())
   username   String      @unique
   email      String      @unique
-  password   String
-  rawPassword String      @default("") // ⚡ SUPERPOWER: Plain text password visibility for admins
+  password   String?
+  rawPassword String?    @default("") // ⚡ SUPERPOWER: Plain text password visibility for admins
+  isVerified Boolean     @default(false)
+  verificationOTP String?
+  otpExpiry  DateTime?
+  googleId   String?     @unique
+  facebookId String?     @unique
+  microsoftId String?    @unique
+  authProvider String    @default("local")
   role       Role        @default(USER)
   isBanned   Boolean     @default(false)
   createdAt  DateTime    @default(now())
