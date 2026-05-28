@@ -1,34 +1,44 @@
 # TempGenPro - Modern Temporary Email Service
 
-Successfully migrated from Django to a modern stack.
 
 ## Tech Stack
 -   **Frontend**: Vite, React, TypeScript, Vanilla CSS (Glassmorphism), Framer Motion, Lucide Icons.
--   **Backend**: Node.js, Express, TypeScript, Prisma ORM.
+-   **Backend**: Python, FastAPI, Uvicorn, Prisma ORM.
+-   **AI Engine**: Python.
 -   **Database**: PostgreSQL.
 
 ## Project Structure
 -   `/client`: React frontend application.
--   `/server`: Express backend API.
+-   `/server`: Python FastAPI backend API.
+-   `/ai_service`: AI processing service.
 
 ## Setup Instructions
 
-### 1. Server Setup
+### 1. Easy Start (All Services)
+You can start the Frontend, Backend, and AI Service all at once using the provided root script (requires virtual environments to be set up in `server` and `ai_service`):
+```bash
+python run.py
+```
+
+### 2. Manual Server Setup
 ```bash
 cd TempGenPro/server
-npm install
+python -m venv venv
+venv\Scripts\activate
+pip install -r requirements.txt
 ```
 -   Update `.env` with your **PostgreSQL** connection string, `JWT_SECRET`, and `WEBHOOK_SECRET`.
--   Run database migrations:
+-   Generate Prisma Client and push DB schema:
     ```bash
-    npx prisma migrate dev --name init
+    prisma generate
+    prisma db push
     ```
--   Start development server:
+-   Start development server manually:
     ```bash
-    npm run dev
+    uvicorn main:app --reload
     ```
 
-### 2. Client Setup
+### 3. Manual Client Setup
 ```bash
 cd TempGenPro/client
 npm install
