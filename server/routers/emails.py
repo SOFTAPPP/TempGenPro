@@ -206,7 +206,7 @@ async def send_custom_email(req: SendEmailRequest, current_user: UserPayload = D
         server = smtplib.SMTP(smtp_host, smtp_port)
         server.starttls()
         server.login(smtp_user, smtp_pass)
-        server.sendmail(smtp_user, req.to_email, msg.as_string())
+        server.sendmail(req.from_email, req.to_email, msg.as_string())
         server.quit()
         print(f"[Email Router] Outgoing mail successfully sent from {req.from_email} to {req.to_email}")
         return {"message": "Email sent successfully."}
