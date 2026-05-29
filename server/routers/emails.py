@@ -2,6 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from typing import Optional
 import asyncio
+from datetime import datetime
+from datetime import timezone
 from utils.db import db
 from dependencies.auth import get_current_user, UserPayload
 from utils.email_generator import generate_unique_email
@@ -193,6 +195,17 @@ async def send_custom_email(req: SendEmailRequest, current_user: UserPayload = D
         print(f"Subject: {req.subject}")
         print(f"Body: {req.body}")
         print("==========================================\n")
+        
+        await db.message.create(
+            data={
+                "tempEmailId": email_node.id,
+                "sender": f"OUTBOUND:{req.to_email}",
+                "subject": req.subject,
+                "body": req.body,
+                "receivedAt": datetime.now(timezone.utc)
+            }
+        )
+        
         return {"message": "Email sent successfully (mocked locally)."}
 
     try:
@@ -209,6 +222,17 @@ async def send_custom_email(req: SendEmailRequest, current_user: UserPayload = D
         server.sendmail(req.from_email, req.to_email, msg.as_string())
         server.quit()
         print(f"[Email Router] Outgoing mail successfully sent from {req.from_email} to {req.to_email}")
+        
+        await db.message.create(
+            data={
+                "tempEmailId": email_node.id,
+                "sender": f"OUTBOUND:{req.to_email}",
+                "subject": req.subject,
+                "body": req.body,
+                "receivedAt": datetime.now(timezone.utc)
+            }
+        )
+        
         return {"message": "Email sent successfully."}
     except Exception as e:
         print(f"[Email Router Error] SMTP outgoing delivery failed: {e}")

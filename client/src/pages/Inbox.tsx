@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { AlertTriangle, ArrowRight, ChevronLeft, Clock, Copy, Ghost, Inbox as InboxIcon, Mail, MessageSquare, Plus, RefreshCw, Shield, Trash2, Wand2, X, Zap, Pen } from 'lucide-react';
+import { AlertTriangle, ChevronLeft, Clock, Copy, Ghost, Inbox as InboxIcon, Mail, MessageSquare, Plus, RefreshCw, Shield, Trash2, Wand2, X, Zap, Send, Pen } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -48,6 +48,63 @@ const stripHtml = (html: string): string => {
   return clean.replace(/\s+/g, ' ').trim();
 };
 
+
+const stripEmailQuotes = (text: string) => {
+  if (!text) return '';
+  const parts = text.split(/(On\s+(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)[\s\S]*?wrote:)/i);
+  let cleaned = parts[0];
+  cleaned = cleaned.replace(/^>.*$/gm, '');
+  return cleaned.trim();
+};
+
+const cleanRawEmail = (email: string): string => {
+  if (!email) return '';
+  let cleanEmail = email;
+  const match = email.match(/<([^>]+)>/);
+  if (match) {
+    cleanEmail = match[1];
+  }
+  const parts = cleanEmail.split('@');
+  if (parts.length < 2) return cleanEmail;
+  const localPart = parts[0];
+  const domain = parts[1];
+
+  const isSystemLocal = /^[0-9a-f]{8,}[-+]|bounces|bounce|notification|noreply|no-reply/i.test(localPart) || localPart.length > 25;
+  if (isSystemLocal) {
+    if (localPart.toLowerCase().startsWith('bounces') || localPart.toLowerCase().startsWith('bounce')) {
+      return `bounce@${domain}`;
+    }
+    if (localPart.toLowerCase().startsWith('noreply') || localPart.toLowerCase().startsWith('no-reply')) {
+      return `noreply@${domain}`;
+    }
+    return `service@${domain}`;
+  }
+  return cleanEmail;
+};
+
+
+
+const getThreadParticipant = (sender: string) => {
+  if (sender.startsWith('OUTBOUND:')) {
+    return cleanRawEmail(sender.replace('OUTBOUND:', '').trim());
+  }
+  return cleanRawEmail(sender);
+};
+
+const getThreadSubject = (subject: string) => {
+  if (!subject) return '(No Subject)';
+  return subject.replace(/^(Re|Fwd):\s*/i, '').trim();
+};
+
+type Thread = {
+  id: string;
+  participant: string;
+  subject: string;
+  messages: Message[];
+  latestMessageAt: string;
+  trackersBlocked: number;
+};
+
 const getEmailBodyToRender = (body: string): string => {
   if (!body) return '';
   if (body.includes('--- mail_boundary ---')) {
@@ -64,6 +121,9 @@ const getEmailBodyToRender = (body: string): string => {
 
 const formatSender = (sender: string, subject?: string): string => {
   if (!sender) return 'Unknown';
+  if (sender.startsWith('OUTBOUND:')) {
+    return `To: ${sender.replace('OUTBOUND:', '').trim()}`;
+  }
 
   const parts = sender.split('@');
   if (parts.length < 2) return sender;
@@ -154,30 +214,7 @@ const formatSender = (sender: string, subject?: string): string => {
   return friendlyDomain ? capitalize(friendlyDomain) : capitalize(localPart);
 };
 
-const cleanRawEmail = (email: string): string => {
-  if (!email) return '';
-  let cleanEmail = email;
-  const match = email.match(/<([^>]+)>/);
-  if (match) {
-    cleanEmail = match[1];
-  }
-  const parts = cleanEmail.split('@');
-  if (parts.length < 2) return cleanEmail;
-  const localPart = parts[0];
-  const domain = parts[1];
 
-  const isSystemLocal = /^[0-9a-f]{8,}[-+]|bounces|bounce|notification|noreply|no-reply/i.test(localPart) || localPart.length > 25;
-  if (isSystemLocal) {
-    if (localPart.toLowerCase().startsWith('bounces') || localPart.toLowerCase().startsWith('bounce')) {
-      return `bounce@${domain}`;
-    }
-    if (localPart.toLowerCase().startsWith('noreply') || localPart.toLowerCase().startsWith('no-reply')) {
-      return `noreply@${domain}`;
-    }
-    return `service@${domain}`;
-  }
-  return cleanEmail;
-};
 
 const extractOtpFromText = (subject: string, body: string): string | null => {
   const cleanBody = (text: string): string => {
@@ -261,7 +298,7 @@ const extractOtpFromText = (subject: string, body: string): string | null => {
           return match;
         }
       }
-      return bodyDigits[0];
+      return null;
     }
   }
 
@@ -498,8 +535,41 @@ const Inbox: React.FC = () => {
   const navigate = useNavigate();
   const [emails, setEmails] = useState<TempEmail[]>([]);
   const [selectedEmail, setSelectedEmail] = useState<TempEmail | null>(null);
-  const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
+
+  const threads = React.useMemo(() => {
+    const threadMap: Record<string, Thread> = {};
+    messages.forEach(msg => {
+      const participant = getThreadParticipant(msg.sender) || 'Unknown';
+      const cleanSubj = getThreadSubject(msg.subject);
+      const threadId = `${participant}|${cleanSubj}`;
+
+      if (!threadMap[threadId]) {
+        threadMap[threadId] = {
+          id: threadId,
+          participant,
+          subject: cleanSubj,
+          messages: [],
+          latestMessageAt: msg.receivedAt,
+          trackersBlocked: 0
+        };
+      }
+      
+      threadMap[threadId].messages.push(msg);
+      threadMap[threadId].trackersBlocked += msg.trackersBlocked;
+      
+      if (new Date(msg.receivedAt).getTime() > new Date(threadMap[threadId].latestMessageAt).getTime()) {
+        threadMap[threadId].latestMessageAt = msg.receivedAt;
+      }
+    });
+
+    return Object.values(threadMap).sort((a, b) => 
+      new Date(b.latestMessageAt).getTime() - new Date(a.latestMessageAt).getTime()
+    );
+  }, [messages]);
+
+  const selectedThread = threads.find(t => t.id === selectedThreadId) || null;
   const [msgLoading, setMsgLoading] = useState(false);
   const [usePersona, setUsePersona] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -509,6 +579,29 @@ const Inbox: React.FC = () => {
   const [showCopyToast, setShowCopyToast] = useState(false);
   const [showAiModal, setShowAiModal] = useState(false);
   const [socketStatus, setSocketStatus] = useState<'connected' | 'disconnected' | 'connecting'>('connecting');
+
+  const [replyText, setReplyText] = useState('');
+  const [isSendingReply, setIsSendingReply] = useState(false);
+
+  const handleSendReply = async () => {
+    if (!replyText.trim() || !selectedThread || !selectedEmail) return;
+    setIsSendingReply(true);
+    try {
+      await api.post('/emails/send', {
+        from_email: selectedEmail.email,
+        to_email: selectedThread.participant,
+        subject: selectedThread.subject.startsWith('Re:') ? selectedThread.subject : `Re: ${selectedThread.subject}`,
+        body: replyText
+      });
+      setReplyText('');
+      showNotification('Reply sent successfully!', 'success');
+      setTimeout(() => fetchMessages(selectedEmail.id, true), 1000);
+    } catch (err: any) {
+      showNotification(err.response?.data?.detail || 'Failed to send reply', 'error');
+    } finally {
+      setIsSendingReply(false);
+    }
+  };
 
   const [confirmState, setConfirmState] = useState<{
     show: boolean;
@@ -568,7 +661,6 @@ const Inbox: React.FC = () => {
       const res = await api.get(`/emails/messages/${msgId}`);
       // Update in place once full body arrives
       setMessages(prev => prev.map(m => m.id === msgId ? { ...m, body: res.data.body } : m));
-      setSelectedMessage(prev => prev?.id === msgId ? { ...prev, body: res.data.body } : prev);
     } catch (err) {
       // Silently fail - user already sees the truncated body
     }
@@ -633,7 +725,7 @@ const Inbox: React.FC = () => {
   useEffect(() => {
     if (selectedEmail) {
       fetchMessages(selectedEmail.id);
-      setSelectedMessage(null); // Reset detail view when switching relay
+      setSelectedThreadId(null); // Reset detail view when switching relay
       setShowMobileMessages(true);
       socketService.joinInbox(selectedEmail.email);
       socketService.onNewEmail((newMessage: Message) => {
@@ -715,7 +807,7 @@ const Inbox: React.FC = () => {
         try {
           await api.delete(`/emails/messages/${id}`);
           setMessages(messages.filter(m => m.id !== id));
-          setSelectedMessage(null);
+          setSelectedThreadId(null);
           setConfirmState(prev => ({ ...prev, show: false }));
           showNotification('Packet Permanently Erased.');
         } catch (err) {
@@ -767,8 +859,6 @@ const Inbox: React.FC = () => {
     });
   };
 
-  const bodyToRender = selectedMessage ? getEmailBodyToRender(selectedMessage.body) : '';
-  const otpToRender = selectedMessage ? (extractOtpFromText(selectedMessage.subject, bodyToRender) || selectedMessage.otpCode || null) : null;
 
   return (
     <div className="inbox-container">
@@ -1021,7 +1111,7 @@ const Inbox: React.FC = () => {
                   <div style={{ textAlign: 'center' }}><div style={{ fontSize: '1.2rem', fontWeight: 900, color: 'var(--text-bold)' }}>Instant</div><p style={{ fontSize: '0.65rem', textTransform: 'uppercase', fontWeight: 800 }}>Shredding</p></div>
                 </div>
               </motion.div>
-            ) : selectedMessage ? (
+            ) : selectedThread ? (
               /* --- PACKET READER (DETAIL VIEW) --- */
               <motion.div
                 key="detail"
@@ -1031,157 +1121,137 @@ const Inbox: React.FC = () => {
                 style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', background: 'var(--bg)' }}
               >
                 <div className="inbox-msg-detail-topbar" style={{ padding: '1rem 2rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '1.5rem', background: 'rgba(0,0,0,0.2)' }}>
-                  <button onClick={() => setSelectedMessage(null)} className="btn btn-secondary btn-sm" style={{ padding: '0.6rem 1.2rem', borderRadius: '12px', fontWeight: 800 }}>
+                  <button onClick={() => setSelectedThreadId(null)} className="btn btn-secondary btn-sm" style={{ padding: '0.6rem 1.2rem', borderRadius: '12px', fontWeight: 800 }}>
                     <ChevronLeft size={18} /> BACK TO INBOX
                   </button>
                   <div style={{ height: '24px', width: '1px', background: 'var(--border)' }}></div>
-                  <button onClick={() => handleDeleteMessage(selectedMessage.id)} className="btn btn-nav-round" style={{ width: '36px', height: '36px', color: '#ef4444' }}>
+                  <button onClick={() => { selectedThread.messages.forEach(m => handleDeleteMessage(m.id)); setSelectedThreadId(null); }} className="btn btn-nav-round" style={{ width: '36px', height: '36px', color: '#ef4444' }}>
                     <Trash2 size={16} />
                   </button>
                 </div>
 
-                <div className="inbox-msg-detail-body" style={{ flex: 1, overflowY: 'auto', padding: '4rem 2rem' }}>
-                  <div style={{ maxWidth: '850px', margin: '0 auto' }}>
-                    <h1 style={{ fontSize: '2.5rem', fontWeight: 900, marginBottom: '2.5rem', lineHeight: 1.1, color: 'var(--text-bold)', wordBreak: 'break-word' }}>{selectedMessage.subject}</h1>
+                <div className="inbox-msg-detail-body" style={{ flex: 1, overflowY: 'auto', padding: '4rem 2rem', display: 'flex', flexDirection: 'column' }}>
+                  <div style={{ maxWidth: '850px', margin: '0 auto', width: '100%', flex: 1 }}>
+                    <h1 style={{ fontSize: '2.5rem', fontWeight: 900, marginBottom: '2.5rem', lineHeight: 1.1, color: 'var(--text-bold)', wordBreak: 'break-word' }}>{selectedThread.subject}</h1>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', paddingBottom: '2rem' }}>
+                    {selectedThread.messages.slice().reverse().map((msg) => {
+                      const bodyToRender = getEmailBodyToRender(msg.body);
+                      const cleanBodyToRender = stripEmailQuotes(bodyToRender);
+                      const otpToRender = extractOtpFromText(msg.subject, bodyToRender) || msg.otpCode || null;
+                      const isOutbound = msg.sender.startsWith('OUTBOUND:');
+                      return (
+                      <div key={msg.id} style={{ 
+                        opacity: msg.id === selectedThread.messages[0].id ? 1 : 0.8, 
+                        transition: 'opacity 0.2s',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: isOutbound ? 'flex-end' : 'flex-start',
+                        marginBottom: '1rem'
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'flex-end', gap: '10px', maxWidth: '80%', flexDirection: isOutbound ? 'row-reverse' : 'row' }}>
+                          <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: isOutbound ? 'var(--primary)' : 'rgba(255,255,255,0.1)', color: isOutbound ? '#000' : 'var(--text-bold)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '1rem', flexShrink: 0 }}>
+                            {formatSender(msg.sender, msg.subject)[0].toUpperCase()}
+                          </div>
+                          
+                          <div style={{
+                            background: isOutbound ? 'var(--primary)' : 'rgba(255, 255, 255, 0.05)',
+                            color: isOutbound ? '#000' : 'var(--text)',
+                            padding: '1.25rem 1.5rem',
+                            borderRadius: '20px',
+                            borderBottomLeftRadius: isOutbound ? '20px' : '4px',
+                            borderBottomRightRadius: isOutbound ? '4px' : '20px',
+                            border: isOutbound ? 'none' : '1px solid var(--border-light)',
+                          }}>
+                             {otpToRender && (
+                                <div style={{ background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '12px', marginBottom: '1rem', textAlign: 'center' }}>
+                                  <div style={{ fontSize: '0.65rem', fontWeight: 900, letterSpacing: '0.2em', color: isOutbound ? '#000' : 'var(--primary)', marginBottom: '0.5rem' }}>VERIFICATION CODE</div>
+                                  <div style={{ fontSize: '2rem', fontWeight: 900, letterSpacing: '0.2em' }}>{otpToRender}</div>
+                                </div>
+                             )}
 
-                    <div className="inbox-msg-detail-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4rem', paddingBottom: '2rem', borderBottom: '1px solid var(--border-light)' }}>
-                      <div className="inbox-msg-detail-sender" style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', minWidth: 0 }}>
-                        <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'var(--primary)', color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '1.2rem', flexShrink: 0 }}>
-                          {formatSender(selectedMessage.sender, selectedMessage.subject)[0].toUpperCase()}
+                             {msg?.verificationLink && (
+                                <div style={{ background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '12px', marginBottom: '1rem', textAlign: 'center' }}>
+                                   <a href={msg.verificationLink} target="_blank" className="btn btn-sm" style={{ background: isOutbound ? '#000' : 'var(--primary)', color: isOutbound ? 'var(--primary)' : '#000', textDecoration: 'none', padding: '0.5rem 1rem' }}>VERIFY LINK</a>
+                                </div>
+                             )}
+
+                             <div style={{ fontSize: '1.05rem', lineHeight: 1.6, whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
+                               {renderMessageBody(cleanBodyToRender)}
+                             </div>
+                          </div>
                         </div>
-                        <div className="inbox-msg-detail-sender-text" style={{ minWidth: 0 }}>
-                          <p style={{ fontWeight: 900, color: 'var(--text-bold)', margin: 0, fontSize: '1.1rem', wordBreak: 'break-all' }}>
-                            {formatSender(selectedMessage.sender, selectedMessage.subject)}
-                          </p>
-                          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: '4px 0 0', wordBreak: 'break-all' }}>
-                            From: {cleanRawEmail(selectedMessage.sender)}
-                          </p>
-                          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: 0, wordBreak: 'break-all' }}>Directed to: {selectedEmail.email}</p>
-                          {selectedMessage.trackersBlocked > 0 && (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '6px', color: '#10b981', fontSize: '0.75rem', fontWeight: 800 }}>
-                              <Shield size={12} fill="#10b981" fillOpacity={0.2} /> {selectedMessage.trackersBlocked} TRACKERS PURGED FROM INGESTION
-                            </div>
+                        
+                        <div style={{ 
+                          fontSize: '0.75rem', 
+                          color: 'var(--text-muted)', 
+                          marginTop: '8px', 
+                          padding: isOutbound ? '0 50px 0 0' : '0 0 0 50px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px'
+                        }}>
+                          {new Date(msg.receivedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          {msg.trackersBlocked > 0 && (
+                            <span style={{ color: '#10b981', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <Shield size={10} /> {msg.trackersBlocked}
+                            </span>
                           )}
                         </div>
                       </div>
-                      <div className="inbox-msg-detail-time" style={{ textAlign: 'right', flexShrink: 0 }}>
-                        <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: 0 }}>{new Date(selectedMessage.receivedAt).toLocaleDateString()}</p>
-                        <p style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--primary)', margin: 0 }}>{new Date(selectedMessage.receivedAt).toLocaleTimeString()}</p>
-                      </div>
-                    </div>
-
-                    {selectedMessage?.verificationLink ? (
-                      <div className="otp-card glass-card" style={{ padding: '2.5rem', borderRadius: '24px', border: '2px solid var(--primary)', marginBottom: '4rem', textAlign: 'center', background: 'rgba(182, 139, 245, 0.03)' }}>
-                        <p className="otp-title" style={{ fontSize: '0.75rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.3em', marginBottom: '1.5rem', color: 'var(--primary)' }}>ACTION REQUIRED</p>
-                        <div className="otp-code-display" style={{ fontSize: '2.2rem', fontWeight: 900, color: 'var(--text-bold)', textShadow: '0 0 20px var(--primary-glow)', marginBottom: '1rem', fontFamily: 'Outfit, sans-serif', letterSpacing: 'normal' }}>Verification Link</div>
-                        <motion.a
-                          href={selectedMessage.verificationLink}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="btn btn-primary otp-btn"
-                          whileHover={{ scale: 1.03, translateY: -2 }}
-                          whileTap={{ scale: 0.97, translateY: 0 }}
-                          style={{ marginTop: '1rem', padding: '1rem 3rem', borderRadius: '14px', display: 'inline-flex', textDecoration: 'none' }}
-                        >
-                          Verify Email <ArrowRight size={20} style={{ marginLeft: '8px' }} />
-                        </motion.a>
-                      </div>
-                    ) : otpToRender ? (
-                      <div className="otp-card glass-card" style={{ padding: '2.5rem', borderRadius: '24px', border: '2px solid var(--primary)', marginBottom: '4rem', textAlign: 'center', background: 'rgba(182, 139, 245, 0.03)' }}>
-                        <p className="otp-title" style={{ fontSize: '0.75rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.3em', marginBottom: '1.5rem', color: 'var(--primary)' }}>SECURITY VERIFICATION CODE</p>
-                        <div className="otp-code-display" style={{ fontSize: '4rem', fontWeight: 900, letterSpacing: '0.4em', fontFamily: 'monospace', color: 'var(--text-bold)', textShadow: '0 0 20px var(--primary-glow)' }}>{otpToRender}</div>
-                        <motion.button 
-                          onClick={() => copyToClipboard(otpToRender || '')} 
-                          className="btn btn-primary otp-btn" 
-                          whileHover={{ scale: 1.03, translateY: -2 }}
-                          whileTap={{ scale: 0.97, translateY: 0 }}
-                          style={{ marginTop: '2rem', padding: '1rem 3rem', borderRadius: '14px' }}
-                        >
-                          <Copy size={20} /> COPY CODE
-                        </motion.button>
-                      </div>
-                    ) : null}
-
-                    <div className="inbox-msg-content" style={{ borderRadius: '20px', background: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--border-light)', overflow: 'hidden' }}>
-                      {/* ⚡ HTML Content Detection & Rendering */}
-                      {/<\/?[a-z][\s\S]*>/i.test(bodyToRender) || bodyToRender.includes('<!DOCTYPE') ? (
-                        <div className="inbox-iframe-wrapper">
-                          <iframe
-                            title="Packet Content"
-                            srcDoc={`
-                              <html>
-                                <head>
-                                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                                  <base target="_blank">
-                                  <style>
-                                    html, body {
-                                      margin: 0;
-                                      padding: 0;
-                                      background-color: #ffffff;
-                                      color: #222222;
-                                      max-width: 100% !important;
-                                      overflow-x: hidden !important;
-                                    }
-                                    body {
-                                      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-                                      padding: 24px;
-                                      line-height: 1.5;
-                                      word-wrap: break-word;
-                                      word-break: break-word;
-                                      overflow-wrap: break-word;
-                                      box-sizing: border-box !important;
-                                    }
-                                    /* Ensure image attachments or large header images don't overflow the page width */
-                                    img {
-                                      max-width: 100% !important;
-                                      height: auto !important;
-                                    }
-                                    a {
-                                      color: #b68bf5;
-                                      text-decoration: underline;
-                                    }
-                                    /* Force all structural elements to fit within viewport and enable box-sizing */
-                                    * {
-                                      box-sizing: border-box !important;
-                                    }
-                                    table, td, div, p, span, section, header, footer {
-                                      max-width: 100% !important;
-                                      box-sizing: border-box !important;
-                                    }
-                                    /* Allow email tables to size appropriately without forcing full-width column distortion */
-                                    table {
-                                      width: 100% !important;
-                                    }
-                                    td {
-                                      word-break: break-word !important;
-                                    }
-                                    @media (max-width: 600px) {
-                                      body {
-                                        padding: 12px !important;
-                                      }
-                                    }
-                                  </style>
-                                </head>
-                                <body>${bodyToRender}</body>
-                              </html>
-                            `}
-                            sandbox="allow-popups allow-popups-to-escape-sandbox"
-                            style={{
-                              width: '100%',
-                              height: '100%',
-                              border: 'none',
-                              display: 'block'
-                            }}
-                          />
-                        </div>
-                      ) : (
-                        <div className="inbox-msg-content-text" style={{ fontSize: '1.15rem', lineHeight: 1.9, color: 'var(--text)', whiteSpace: 'pre-wrap', padding: '2.5rem', overflowWrap: 'break-word', wordBreak: 'break-all' }}>
-                          {renderMessageBody(bodyToRender)}
-                        </div>
-                      )}
+                      )})}
                     </div>
                   </div>
                 </div>
+
+                {user?.role === 'ADMIN' && (
+                  <div style={{ 
+                    padding: '1.5rem 2rem', 
+                    borderTop: '1px solid var(--border)', 
+                    background: 'rgba(0,0,0,0.3)',
+                    backdropFilter: 'blur(10px)'
+                  }}>
+                    <div style={{ maxWidth: '850px', margin: '0 auto', display: 'flex', gap: '1rem' }}>
+                      <textarea 
+                        value={replyText}
+                        onChange={e => setReplyText(e.target.value)}
+                        placeholder="Write a reply..."
+                        style={{ 
+                          flex: 1, 
+                          background: 'rgba(255,255,255,0.05)', 
+                          border: '1px solid var(--border-light)', 
+                          borderRadius: '16px', 
+                          padding: '1rem 1.5rem',
+                          color: 'var(--text)',
+                          fontSize: '1rem',
+                          resize: 'none',
+                          minHeight: '60px',
+                          fontFamily: 'inherit'
+                        }}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            handleSendReply();
+                          }
+                        }}
+                      />
+                      <button 
+                        onClick={handleSendReply}
+                        disabled={!replyText.trim() || isSendingReply}
+                        className="btn btn-primary"
+                        style={{
+                          borderRadius: '16px',
+                          padding: '0 2rem',
+                          fontWeight: 900,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px'
+                        }}
+                      >
+                        {isSendingReply ? <RefreshCw className="animate-spin" size={20} /> : <Send size={20} />}
+                      </button>
+                    </div>
+                  </div>
+                )}
               </motion.div>
             ) : (
               /* --- PACKET LIST (GMAIL VIEW) --- */
@@ -1269,14 +1339,14 @@ const Inbox: React.FC = () => {
                     </div>
                   ) : (
                     <div className="gmail-list">
-                      {messages.map(msg => (
+                      {threads.map(thread => {
+                        const lastMsg = thread.messages[thread.messages.length - 1];
+                        return (
                         <div
-                          key={msg.id}
+                          key={thread.id}
                           onClick={() => {
-                            // ⚡ Show message INSTANTLY from local state (zero latency)
-                            setSelectedMessage(msg);
-                            // Fetch full body in background only if needed
-                            fetchMessageDetail(msg.id, msg.body);
+                            setSelectedThreadId(thread.id);
+                            if (lastMsg) fetchMessageDetail(lastMsg.id, lastMsg.body);
                           }}
                           className="gmail-row"
                           style={{
@@ -1289,41 +1359,42 @@ const Inbox: React.FC = () => {
                             gap: '2.5rem'
                           }}
                         >
-                          <div className="gmail-row-sender" style={{ width: '180px', flexShrink: 0, fontWeight: 900, fontSize: '0.95rem', color: 'var(--text-bold)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {formatSender(msg.sender, msg.subject)}
+                          <div className="gmail-row-sender" style={{ width: '180px', flexShrink: 0, fontWeight: 900, fontSize: '0.95rem', color: 'var(--text-bold)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            {thread.participant}
+                            {thread.messages.length > 1 && (
+                              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 800 }}>({thread.messages.length})</span>
+                            )}
                           </div>
                           <div className="gmail-row-body" style={{ flex: 1, display: 'flex', gap: '0.75rem', minWidth: 0, alignItems: 'baseline' }}>
-                            <span className="gmail-subject" style={{ fontWeight: 800, color: 'var(--text-bold)', whiteSpace: 'nowrap', fontSize: '0.95rem', overflow: 'hidden', textOverflow: 'ellipsis' }}>{msg.subject}</span>
-                            <span className="gmail-body-snippet" style={{ color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: '0.9rem' }}>- {stripHtml(getEmailBodyToRender(msg.body)).substring(0, 120)}</span>
+                            <span className="gmail-subject" style={{ fontWeight: 800, color: 'var(--text-bold)', whiteSpace: 'nowrap', fontSize: '0.95rem', overflow: 'hidden', textOverflow: 'ellipsis' }}>{thread.subject}</span>
+                            <span className="gmail-body-snippet" style={{ color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: '0.9rem' }}>- {stripHtml(getEmailBodyToRender(lastMsg?.body || '')).substring(0, 120)}</span>
                           </div>
                           <div className="gmail-row-time" style={{ width: '120px', textAlign: 'right', fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 800, whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '12px' }}>
-                            {msg.trackersBlocked > 0 && (
-                              <span title={`${msg.trackersBlocked} Trackers Purged`}>
+                            {lastMsg?.sender.startsWith('OUTBOUND:') && (
+                              <span style={{ fontSize: '0.6rem', fontWeight: 900, background: 'rgba(182, 139, 245, 0.1)', color: 'var(--primary)', padding: '2px 6px', borderRadius: '4px' }}>SENT</span>
+                            )}
+                            {thread.trackersBlocked > 0 && (
+                              <span title={`${thread.trackersBlocked} Trackers Purged`}>
                                 <Shield size={14} style={{ color: '#10b981' }} />
                               </span>
                             )}
-                            {new Date(msg.receivedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            {new Date(thread.latestMessageAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </div>
                         </div>
-                      ))}
+                      )})}
                     </div>
                   )}
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
-          {selectedEmail && (
+          {selectedEmail && !selectedThread && user?.role === 'ADMIN' && (
             <button
               onClick={() => {
-                const state: any = { fromEmail: selectedEmail.email };
-                if (selectedMessage) {
-                  state.toEmail = cleanRawEmail(selectedMessage.sender);
-                  state.subject = `Re: ${selectedMessage.subject}`;
-                }
-                navigate('/sendmail', { state });
+                navigate('/sendmail', { state: { fromEmail: selectedEmail.email } });
               }}
               className="sendmail-fab"
-              title={selectedMessage ? "Reply to Message" : "Compose and Send Email"}
+              title="Compose New Email"
             >
               <Pen size={22} />
             </button>
