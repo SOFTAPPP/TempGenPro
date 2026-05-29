@@ -153,3 +153,66 @@ async def toggle_camouflage(email_id: int, current_user: UserPayload = Depends(g
     updated_dict["createdAt"] = updated.createdAt.isoformat() if updated.createdAt else None
     updated_dict["expiresAt"] = updated.expiresAt.isoformat() if updated.expiresAt else None
     return updated_dict
+
+class SendEmailRequest(BaseModel):
+    from_email: str
+    to_email: str
+    subject: str
+    body: str
+
+@router.post("/send")
+async def send_custom_email(req: SendEmailRequest, current_user: UserPayload = Depends(get_current_user)):
+    import os
+    import smtplib
+    from email.mime.text import MIMEText
+    from email.mime.multipart import MIMEMultipart
+
+    # Verify that the current user owns the from_email and it's active
+    email_node = await db.tempemail.find_first(
+        where={
+            "email": req.from_email,
+            "userId": current_user.id,
+            "isActive": True
+        }
+    )
+    if not email_node:
+        raise HTTPException(
+            status_code=404,
+            detail="Sender email address not found or inactive."
+        )
+
+    smtp_host = os.getenv("SMTP_HOST", "smtp.gmail.com")
+    smtp_port = int(os.getenv("SMTP_PORT", 587))
+    smtp_user = os.getenv("SMTP_USER", "")
+    smtp_pass = os.getenv("SMTP_PASSWORD", "")
+
+    if not smtp_user or not smtp_pass:
+        print("\n=== [LOCAL SMTP OUTGOING MAIL (MOCKED)] ===")
+        print(f"From: {req.from_email}")
+        print(f"To: {req.to_email}")
+        print(f"Subject: {req.subject}")
+        print(f"Body: {req.body}")
+        print("==========================================\n")
+        return {"message": "Email sent successfully (mocked locally)."}
+
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = req.from_email
+        msg['To'] = req.to_email
+        msg['Subject'] = req.subject
+        msg.attach(MIMEText(req.body, 'plain'))
+        msg['Reply-To'] = req.from_email
+
+        server = smtplib.SMTP(smtp_host, smtp_port)
+        server.starttls()
+        server.login(smtp_user, smtp_pass)
+        server.sendmail(smtp_user, req.to_email, msg.as_string())
+        server.quit()
+        print(f"[Email Router] Outgoing mail successfully sent from {req.from_email} to {req.to_email}")
+        return {"message": "Email sent successfully."}
+    except Exception as e:
+        print(f"[Email Router Error] SMTP outgoing delivery failed: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"SMTP delivery failed: {str(e)}"
+        )

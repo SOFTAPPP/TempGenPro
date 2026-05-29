@@ -752,7 +752,8 @@ main {
   border-radius: 24px;
   overflow: hidden;
   display: flex !important;
-  flex-direction: column;
+  flex-direction: column !important;
+  position: relative;
 }
 
 .email-item {
@@ -1410,4 +1411,200 @@ main {
   width: 18px;
   height: 18px;
   flex-shrink: 0;
+}
+
+/* Roadmap Section Styles */
+.roadmap-section {
+  padding: 8rem 0;
+  overflow: hidden;
+}
+
+.roadmap-card {
+  background: linear-gradient(135deg, rgba(182, 139, 245, 0.08) 0%, rgba(0, 0, 0, 0) 100%);
+  border: 2px solid rgba(182, 139, 245, 0.2);
+  padding: clamp(2rem, 5vw, 5rem);
+  border-radius: clamp(24px, 5vw, 48px);
+  position: relative;
+}
+
+.roadmap-dots {
+  position: absolute;
+  top: 2rem;
+  right: 3rem;
+  display: flex;
+  gap: 8px;
+}
+
+.roadmap-dots .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.roadmap-dots .dot.active {
+  background: var(--primary);
+}
+
+.roadmap-title {
+  font-size: clamp(2rem, 8vw, 4.5rem);
+  font-weight: 900;
+  margin-bottom: 1.5rem;
+  letter-spacing: -0.03em;
+}
+
+.roadmap-subtitle {
+  font-size: 1.25rem;
+  color: var(--text-muted);
+  margin-bottom: 4rem;
+  line-height: 1.6;
+}
+
+.roadmap-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+}
+
+.roadmap-item {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 2.5rem;
+  border-radius: 24px;
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.roadmap-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  background: rgba(182, 139, 245, 0.1);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.roadmap-item-title {
+  font-size: 1.5rem;
+  font-weight: 900;
+  margin-bottom: 1rem;
+}
+
+.roadmap-item-desc {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  flex-grow: 1;
+}
+
+.roadmap-item-status {
+  margin-top: 1.5rem;
+  font-size: 0.75rem;
+  font-weight: 900;
+  color: var(--primary);
+  text-transform: uppercase;
+}
+
+/* Mobile responsive roadmap adjustments */
+@media (max-width: 768px) {
+  .roadmap-section {
+    padding: 4rem 0;
+  }
+
+  .roadmap-card {
+    padding: 1.25rem;
+    border-radius: 24px;
+  }
+
+  .roadmap-dots {
+    top: 1.25rem;
+    right: 1.5rem;
+  }
+
+  .roadmap-title {
+    font-size: 1.8rem !important;
+    margin-bottom: 1rem;
+  }
+
+  .roadmap-subtitle {
+    font-size: 1rem !important;
+    margin-bottom: 2rem !important;
+  }
+
+  .roadmap-grid {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  .roadmap-item {
+    padding: 1.25rem;
+    border-radius: 18px;
+  }
+
+  .roadmap-icon {
+    width: 44px;
+    height: 44px;
+    margin-bottom: 1.25rem;
+  }
+
+  .roadmap-item-title {
+    font-size: 1.25rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .roadmap-item-desc {
+    font-size: 0.9rem;
+  }
+
+  .roadmap-item-status {
+    margin-top: 1.25rem;
+  }
+}
+
+/* Floating Action Button (FAB) for sendmail */
+.sendmail-fab {
+  position: absolute;
+  bottom: 2rem;
+  right: 2rem;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--bg-secondary);
+  border: 2px solid var(--primary);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 20px var(--primary-glow);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1000;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  outline: none;
+}
+
+.sendmail-fab:hover {
+  background: var(--primary);
+  color: #101115;
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 0 30px var(--primary-glow);
+}
+
+.sendmail-fab:active {
+  transform: scale(0.95);
+}
+
+/* Adjust position of FAB on small mobile viewports */
+@media (max-width: 640px) {
+  .sendmail-fab {
+    bottom: 1.5rem;
+    right: 1.5rem;
+    width: 48px;
+    height: 48px;
+  }
 }

@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { User, Mail, Shield, Calendar, Activity, MessageSquare, Key, ArrowLeft } from 'lucide-react';
+import { Activity, ArrowLeft, Calendar, Key, Mail, MessageSquare, Shield, User } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import api from '../services/api';
 
 interface ProfileData {
   username: string;

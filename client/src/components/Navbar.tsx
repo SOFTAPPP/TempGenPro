@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { LayoutDashboard, LogOut, Mail, Menu, User, X } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, LogOut, Menu, X, LayoutDashboard, User } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
 import Logo from './Logo';
@@ -51,7 +51,7 @@ const Navbar: React.FC = () => {
       <nav className={`nav ${scrolled ? 'scrolled' : ''}`}>
         <div className="container nav-container">
           <SmartLink to="/" className="logo">
-            <Logo iconSize={14} showText />
+            <Logo iconSize={18} showText />
           </SmartLink>
 
           {/* Desktop Nav */}
@@ -66,17 +66,17 @@ const Navbar: React.FC = () => {
               <div className="nav-actions">
                 {user?.role === 'ADMIN' && (
                   <SmartLink to="/admin" className="btn btn-secondary btn-sm">
-                    <LayoutDashboard size={16} /> Admin
+                    <LayoutDashboard size={16} style={{ flexShrink: 0 }} /> Admin
                   </SmartLink>
                 )}
                 <SmartLink to="/inbox" className="btn btn-primary btn-sm">
-                  <Mail size={16} /> Inbox
+                  <Mail size={16} style={{ flexShrink: 0 }} /> Inbox
                 </SmartLink>
                 <SmartLink to="/profile" className="btn btn-secondary btn-nav-round" title="Profile Settings">
-                  <User size={18} />
+                  <User size={18} style={{ flexShrink: 0 }} />
                 </SmartLink>
                 <button onClick={handleLogout} className="btn btn-secondary btn-nav-round" title="Logout">
-                  <LogOut size={16} />
+                  <LogOut size={16} style={{ flexShrink: 0 }} />
                 </button>
               </div>
             ) : (
@@ -93,7 +93,7 @@ const Navbar: React.FC = () => {
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Toggle Menu"
           >
-            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            {mobileMenuOpen ? <X size={24} style={{ flexShrink: 0 }} /> : <Menu size={24} style={{ flexShrink: 0 }} />}
           </button>
         </div>
       </nav>
@@ -153,7 +153,7 @@ const Navbar: React.FC = () => {
                 justifyContent: 'space-between',
                 background: 'rgba(255,255,255,0.02)',
               }}>
-                <Logo iconSize={14} showText />
+                <Logo iconSize={18} showText />
                 <button
                   onClick={() => setMobileMenuOpen(false)}
                   style={{
@@ -176,12 +176,12 @@ const Navbar: React.FC = () => {
               {/* Drawer Content Area */}
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
                 {/* Scrollable Links Section */}
-                <nav style={{ 
-                  padding: '1.5rem', 
-                  display: 'flex', 
-                  flexDirection: 'column', 
-                  gap: '0.5rem', 
-                  flex: 1, 
+                <nav style={{
+                  padding: '1.5rem',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.5rem',
+                  flex: 1,
                   overflowY: 'auto',
                   scrollbarWidth: 'none',
                   msOverflowStyle: 'none'
@@ -218,13 +218,13 @@ const Navbar: React.FC = () => {
                 </nav>
 
                 {/* Fixed Bottom Footer Section */}
-                <div style={{ 
-                  padding: '1.5rem', 
+                <div style={{
+                  padding: '1.5rem',
                   borderTop: '1px solid var(--border)',
                   background: 'rgba(255,255,255,0.02)',
-                  display: 'flex', 
-                  flexDirection: 'column', 
-                  gap: '0.75rem' 
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.75rem'
                 }}>
                   {isAuthenticated ? (
                     <button
@@ -232,7 +232,7 @@ const Navbar: React.FC = () => {
                       className="btn btn-primary"
                       style={{ width: '100%', justifyContent: 'center', borderRadius: '14px', padding: '1rem' }}
                     >
-                      <LogOut size={16} /> Logout
+                      <LogOut size={16} style={{ flexShrink: 0 }} /> Logout
                     </button>
                   ) : (
                     <SmartLink

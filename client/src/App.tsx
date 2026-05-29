@@ -12,6 +12,7 @@ import './index.css';
 // Code Splitting for performance
 const Home = lazy(() => import('./pages/Home'));
 const Inbox = lazy(() => import('./pages/Inbox'));
+const SendMail = lazy(() => import('./pages/sendmail'));
 const Login = lazy(() => import('./pages/Login'));
 const Signup = lazy(() => import('./pages/Signup'));
 const Features = lazy(() => import('./pages/Features'));
@@ -37,6 +38,7 @@ const AnimatedRoutes = () => {
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={<PageWrapper><Home /></PageWrapper>} />
           <Route path="/inbox" element={<PageWrapper><Inbox /></PageWrapper>} />
+          <Route path="/sendmail" element={<PageWrapper><SendMail /></PageWrapper>} />
           <Route path="/login" element={<PageWrapper><Login /></PageWrapper>} />
           <Route path="/signup" element={<PageWrapper><Signup /></PageWrapper>} />
           <Route path="/features" element={<PageWrapper><Features /></PageWrapper>} />
