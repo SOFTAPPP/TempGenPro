@@ -549,11 +549,18 @@ main {
   transition: var(--transition);
 }
 
-.feature-card:hover .feature-icon-wrapper,
-.feature-card.active .feature-icon-wrapper {
+.feature-card:hover .feature-icon-wrapper {
   background: var(--primary);
   color: #101115;
   transform: scale(1.1);
+}
+
+@media (max-width: 900px) {
+  .feature-card.active .feature-icon-wrapper {
+    background: var(--primary);
+    color: #101115;
+    transform: scale(1.1);
+  }
 }
 
 /* Preview Card Specifics */
@@ -856,6 +863,8 @@ main {
   .hero-section {
     padding-top: 6rem !important;
     padding-bottom: 3rem !important;
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
   }
 
   .hero-actions {
@@ -883,9 +892,11 @@ main {
   }
 
   .preview-card {
-    padding: 1.5rem !important;
+    padding: 1.5rem 1.25rem !important;
     border-radius: 20px !important;
-    margin: 3rem 1rem 0 !important;
+    margin: 3rem 0 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
   }
 
   .preview-email {
@@ -924,6 +935,7 @@ main {
     display: block;
   }
 }
+
 
 /* Admin Dashboard Table */
 .admin-table-row {
@@ -1089,19 +1101,51 @@ main {
 
   /* Expanded user panel */
   .admin-expanded-panel {
-    padding: 1.5rem !important;
+    padding: 1rem 0.25rem !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
   }
 
-  /* Authority buttons: stack on mobile */
+  /* Admin Node Card & Message Card responsive padding to prevent horizontal overflow */
+  .admin-node-card {
+    padding: 1rem 0.5rem !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .admin-msg-card {
+    padding: 1rem 0.5rem !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .admin-msg-card span,
+  .admin-msg-card p {
+    max-width: 100% !important;
+    word-break: break-all !important;
+  }
+
+  /* Authority buttons: stack and center on mobile */
   .admin-authority-row {
     flex-direction: column !important;
-    align-items: stretch !important;
+    align-items: center !important;
     gap: 0.75rem !important;
+    width: 100% !important;
   }
 
   .admin-authority-row .btn {
-    width: 100% !important;
+    width: auto !important;
+    min-width: 270px !important;
     justify-content: center !important;
+  }
+
+  .admin-authority-row>div {
+    width: auto !important;
+    min-width: 270px !important;
+    justify-content: space-between !important;
   }
 
   /* Virtual node cards: truncate email */
@@ -1295,6 +1339,18 @@ main {
   .gmail-list {
     overflow-x: hidden !important;
   }
+
+  /* Restrict iframe height in mobile view to fit and scroll properly */
+  .inbox-iframe-wrapper {
+    height: 450px !important;
+  }
+}
+
+/* Custom responsive wrapper for iframe to restrict size and support scaling */
+.inbox-iframe-wrapper {
+  background: #16171d;
+  height: 600px;
+  width: 100%;
 }
 
 /* ============================================

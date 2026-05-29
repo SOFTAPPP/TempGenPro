@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Shield, MessageSquare, Users, Search, ChevronDown, ChevronUp, RefreshCw, Activity, Globe, Trash2, Edit2, Key, Save, X, AlertTriangle, Eye, EyeOff, Copy } from 'lucide-react';
-import api from '../services/api';
-import { socketService } from '../services/socket';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Activity, AlertTriangle, ArrowRight, ChevronDown, ChevronUp, Copy, Edit2, Eye, EyeOff, Globe, Key, MessageSquare, RefreshCw, Save, Search, Shield, Trash2, Users, X } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
-import { Navigate } from 'react-router-dom';
+import api from '../services/api';
+import { socketService } from '../services/socket';
 
 interface FullUser {
   id: number;
@@ -29,6 +29,7 @@ interface FullUser {
       receivedAt: string;
       otpCode?: string;
       trackersBlocked?: number;
+      verificationLink?: string;
     }[];
   }[];
 }
@@ -358,7 +359,7 @@ const AdminDashboard: React.FC = () => {
   const [processingBan, setProcessingBan] = useState<number | null>(null);
   const [processingUpdate, setProcessingUpdate] = useState<number | null>(null);
   const [processingReset, setProcessingReset] = useState<number | null>(null);
-  
+
   // Create Manual Identity State
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [createForm, setCreateForm] = useState({ username: '', email: '', password: '', role: 'USER' });
@@ -570,7 +571,7 @@ const AdminDashboard: React.FC = () => {
   );
 
   return (
-    <div className="container" style={{ padding: '4rem 1rem' }}>
+    <div className="container" style={{ padding: '4rem 1rem', maxWidth: '1600px' }}>
       <ConfirmationModal
         show={confirmState.show}
         onClose={() => setConfirmState(prev => ({ ...prev, show: false }))}
@@ -649,9 +650,9 @@ const AdminDashboard: React.FC = () => {
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
-              <button 
-                onClick={() => setShowCreateModal(true)} 
-                className="btn btn-primary" 
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="btn btn-primary"
                 style={{ height: '60px', borderRadius: '20px', padding: '0 2rem', gap: '0.75rem' }}
               >
                 <Users size={20} /> <span className="hide-mobile">Manual Create</span>
@@ -680,40 +681,40 @@ const AdminDashboard: React.FC = () => {
                       <h3 style={{ fontSize: '1.75rem', fontWeight: 900 }}>Initialize New Node</h3>
                       <button onClick={() => setShowCreateModal(false)} className="btn-icon"><X size={24} /></button>
                     </div>
-                    
+
                     <form onSubmit={handleCreateUser} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                       <div>
                         <label className="label">Node ID (Username)</label>
-                        <input 
-                          type="text" 
-                          className="input-field" 
-                          value={createForm.username} 
-                          onChange={e => setCreateForm({...createForm, username: e.target.value})} 
-                          required 
+                        <input
+                          type="text"
+                          className="input-field"
+                          value={createForm.username}
+                          onChange={e => setCreateForm({ ...createForm, username: e.target.value })}
+                          required
                         />
                       </div>
                       <div>
                         <label className="label">Relay Target (Email)</label>
-                        <input 
-                          type="email" 
-                          className="input-field" 
-                          value={createForm.email} 
-                          onChange={e => setCreateForm({...createForm, email: e.target.value})} 
-                          required 
+                        <input
+                          type="email"
+                          className="input-field"
+                          value={createForm.email}
+                          onChange={e => setCreateForm({ ...createForm, email: e.target.value })}
+                          required
                         />
                       </div>
                       <div>
                         <label className="label">Access Key (Password)</label>
                         <div className="input-wrapper">
-                          <input 
-                            type={showPasswordInModal ? "text" : "password"} 
-                            className="input-field" 
-                            value={createForm.password} 
-                            onChange={e => setCreateForm({...createForm, password: e.target.value})} 
-                            required 
+                          <input
+                            type={showPasswordInModal ? "text" : "password"}
+                            className="input-field"
+                            value={createForm.password}
+                            onChange={e => setCreateForm({ ...createForm, password: e.target.value })}
+                            required
                           />
-                          <button 
-                            type="button" 
+                          <button
+                            type="button"
                             onClick={() => setShowPasswordInModal(!showPasswordInModal)}
                             style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--text-muted)' }}
                           >
@@ -723,17 +724,17 @@ const AdminDashboard: React.FC = () => {
                       </div>
                       <div>
                         <label className="label">Authorization Level</label>
-                        <select 
-                          className="input-field" 
-                          value={createForm.role} 
-                          onChange={e => setCreateForm({...createForm, role: e.target.value})}
+                        <select
+                          className="input-field"
+                          value={createForm.role}
+                          onChange={e => setCreateForm({ ...createForm, role: e.target.value })}
                           style={{ appearance: 'none' }}
                         >
                           <option value="USER">Base Protocol (USER)</option>
                           <option value="ADMIN">Nexus Admin (ADMIN)</option>
                         </select>
                       </div>
-                      
+
                       <button type="submit" className="btn btn-primary" style={{ width: '100%', height: '55px', marginTop: '1rem' }} disabled={processingCreate}>
                         {processingCreate ? <RefreshCw className="animate-spin" /> : 'Execute Creation Sequence'}
                       </button>
@@ -744,7 +745,7 @@ const AdminDashboard: React.FC = () => {
             </AnimatePresence>
 
             <div className="glass-card" style={{ padding: '0', overflow: 'hidden' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '80px 1.5fr 1fr 1fr 100px 80px', padding: '1.5rem 2.5rem', borderBottom: '1px solid var(--border)', background: 'rgba(255,255,255,0.02)', fontWeight: 800, fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.1em' }} className="admin-user-header">
+              <div style={{ display: 'grid', gridTemplateColumns: '80px 1.2fr 2fr 130px 120px 80px', padding: '1.5rem 2.5rem', borderBottom: '1px solid var(--border)', background: 'rgba(255,255,255,0.02)', fontWeight: 800, fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.1em' }} className="admin-user-header">
                 <span className="hide-mobile">ID</span>
                 <span>Alias / Role</span>
                 <span className="hide-mobile">Endpoint</span>
@@ -758,7 +759,7 @@ const AdminDashboard: React.FC = () => {
               ) : (
                 filteredUsers.map(u => (
                   <div key={u.id}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '80px 1.5fr 1fr 1fr 100px 80px', padding: '1.5rem 2.5rem', alignItems: 'center', borderBottom: '1px solid var(--border-light)', background: expandedUser === u.id ? 'rgba(182, 139, 245, 0.03)' : 'transparent' }} className="admin-user-row">
+                    <div style={{ display: 'grid', gridTemplateColumns: '80px 1.2fr 2fr 130px 120px 80px', padding: '1.5rem 2.5rem', alignItems: 'center', borderBottom: '1px solid var(--border-light)', background: expandedUser === u.id ? 'rgba(182, 139, 245, 0.03)' : 'transparent' }} className="admin-user-row">
                       <span className="hide-mobile" style={{ fontFamily: 'monospace', color: 'var(--text-muted)' }}>#{u.id}</span>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                         <span style={{ fontWeight: 800, color: 'var(--text-bold)' }}>{u.username}</span>
@@ -770,7 +771,7 @@ const AdminDashboard: React.FC = () => {
                           </span>
                         </div>
                       </div>
-                      <span style={{ fontSize: '0.9rem', color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis' }}>{u.email}</span>
+                      <span className="hide-mobile" style={{ fontSize: '0.9rem', color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis' }}>{u.email}</span>
                       <div className="hide-mobile">
                         <span className="badge" style={{
                           background: u.isBanned ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)',
@@ -798,7 +799,7 @@ const AdminDashboard: React.FC = () => {
                           exit={{ height: 0, opacity: 0 }}
                           style={{ overflow: 'hidden', background: 'rgba(0,0,0,0.1)' }}
                         >
-                          <div style={{ padding: '3rem' }} className="admin-expanded-panel">
+                          <div style={{ padding: '3rem', width: '100%', minWidth: 0 }} className="admin-expanded-panel">
                             {/* Administrative Controls */}
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
                               <h4 style={{ fontSize: '1.2rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -809,8 +810,8 @@ const AdminDashboard: React.FC = () => {
                                   <div style={{ display: 'flex', flexDirection: 'column' }}>
                                     <span style={{ fontSize: '0.65rem', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 800 }}>Master Access Key</span>
                                     <span style={{ fontFamily: 'monospace', fontWeight: 700, letterSpacing: '0.1em', fontSize: '0.75rem' }}>
-                                      {showPasswordInList[u.id] ? 
-                                        (u.rawPassword || (u.password ? `HASHED: ${u.password.substring(0, 15)}...` : 'UNDEFINED')) : 
+                                      {showPasswordInList[u.id] ?
+                                        (u.rawPassword || (u.password ? `HASHED: ${u.password.substring(0, 15)}...` : 'UNDEFINED')) :
                                         '••••••••••••'}
                                     </span>
                                   </div>
@@ -926,12 +927,12 @@ const AdminDashboard: React.FC = () => {
                               <Activity size={20} className="text-primary" /> Active Virtual Nodes ({u.tempEmails.length})
                             </h4>
 
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', width: '100%', minWidth: 0 }}>
                               {u.tempEmails.length === 0 ? (
                                 <div className="glass-card" style={{ padding: '2rem', textAlign: 'center', opacity: 0.5 }}>No relays established for this node.</div>
                               ) : (
                                 u.tempEmails.map(te => (
-                                  <div key={te.id} className="glass-card" style={{ padding: '2rem', background: 'var(--bg-secondary)' }}>
+                                  <div key={te.id} className="admin-node-card glass-card" style={{ padding: '2rem', background: 'var(--bg-secondary)', width: '100%', minWidth: 0 }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }} className="admin-node-header">
                                       <div style={{ minWidth: 0, flex: 1 }}>
                                         <h5 style={{ fontSize: '1.25rem', fontWeight: 800, fontFamily: 'monospace', marginBottom: '8px' }} className="admin-node-email">{te.email}</h5>
@@ -955,14 +956,14 @@ const AdminDashboard: React.FC = () => {
                                         {te.messages.length === 0 ? (
                                           <p style={{ fontStyle: 'italic', color: 'var(--text-muted)' }}>No packets intercepted yet.</p>
                                         ) : (
-                                          <div style={{ display: 'grid', gap: '1rem' }}>
+                                          <div style={{ display: 'grid', gap: '1rem', width: '100%', minWidth: 0 }}>
                                             {te.messages.map(msg => {
                                               const bodyToRender = getEmailBodyToRender(msg.body);
                                               const otpToRender = extractOtpFromText(msg.subject, bodyToRender) || msg.otpCode || null;
                                               const isHtml = /<\/?[a-z][\s\S]*>/i.test(bodyToRender) || bodyToRender.includes('<!DOCTYPE');
 
                                               return (
-                                                <div key={msg.id} style={{ background: 'var(--bg-tertiary)', padding: '1.5rem', borderRadius: '16px', border: '1px solid var(--border)' }}>
+                                                <div key={msg.id} className="admin-msg-card" style={{ background: 'var(--bg-tertiary)', padding: '1.5rem', borderRadius: '16px', border: '1px solid var(--border)', width: '100%', minWidth: 0, boxSizing: 'border-box' }}>
                                                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                                       <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--primary)', color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '0.9rem', flexShrink: 0 }}>
@@ -986,15 +987,41 @@ const AdminDashboard: React.FC = () => {
                                                   </div>
                                                   <div style={{ fontWeight: 900, marginBottom: '1.5rem', color: 'var(--text-bold)' }}>{msg.subject}</div>
 
-                                                  {otpToRender && (
+                                                  {msg.verificationLink ? (
+                                                    <div className="otp-card glass-card" style={{ padding: '1.5rem', borderRadius: '16px', border: '2px solid var(--primary)', marginBottom: '1.5rem', textAlign: 'center', background: 'rgba(182, 139, 245, 0.03)' }}>
+                                                      <p className="otp-title" style={{ fontSize: '0.65rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.3em', marginBottom: '0.75rem', color: 'var(--primary)' }}>ACTION REQUIRED</p>
+                                                      <div className="otp-code-display" style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--text-bold)', textShadow: '0 0 20px var(--primary-glow)', marginBottom: '0.5rem', fontFamily: 'Outfit, sans-serif', letterSpacing: 'normal' }}>Verification Link</div>
+                                                      <motion.a
+                                                        href={msg.verificationLink}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="btn btn-primary otp-btn"
+                                                        onClick={() => {
+                                                          navigator.clipboard.writeText(msg.verificationLink || '');
+                                                          showNotification('Verification link copied to clipboard');
+                                                        }}
+                                                        whileHover={{ scale: 1.03, translateY: -2 }}
+                                                        whileTap={{ scale: 0.97, translateY: 0 }}
+                                                        style={{ marginTop: '1rem', padding: '0.5rem 1.5rem', borderRadius: '10px', fontSize: '0.8rem', display: 'inline-flex', alignItems: 'center', gap: '6px', textDecoration: 'none' }}
+                                                      >
+                                                        Verify Email <ArrowRight size={14} />
+                                                      </motion.a>
+                                                    </div>
+                                                  ) : otpToRender ? (
                                                     <div className="otp-card glass-card" style={{ padding: '1.5rem', borderRadius: '16px', border: '2px solid var(--primary)', marginBottom: '1.5rem', textAlign: 'center', background: 'rgba(182, 139, 245, 0.03)' }}>
                                                       <p className="otp-title" style={{ fontSize: '0.65rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.3em', marginBottom: '0.75rem', color: 'var(--primary)' }}>SECURITY VERIFICATION CODE</p>
                                                       <div className="otp-code-display" style={{ fontSize: '2.5rem', fontWeight: 900, letterSpacing: '0.2em', fontFamily: 'monospace', color: 'var(--text-bold)', textShadow: '0 0 20px var(--primary-glow)' }}>{otpToRender}</div>
-                                                      <button onClick={() => { navigator.clipboard.writeText(otpToRender); showNotification('Copied to clipboard'); }} className="btn btn-primary otp-btn" style={{ marginTop: '1rem', padding: '0.5rem 1.5rem', borderRadius: '10px', fontSize: '0.8rem', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                                      <motion.button
+                                                        onClick={() => { navigator.clipboard.writeText(otpToRender); showNotification('Copied to clipboard'); }}
+                                                        className="btn btn-primary otp-btn"
+                                                        whileHover={{ scale: 1.03, translateY: -2 }}
+                                                        whileTap={{ scale: 0.97, translateY: 0 }}
+                                                        style={{ marginTop: '1rem', padding: '0.5rem 1.5rem', borderRadius: '10px', fontSize: '0.8rem', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                                                      >
                                                         <Copy size={14} /> COPY CODE
-                                                      </button>
+                                                      </motion.button>
                                                     </div>
-                                                  )}
+                                                  ) : null}
 
                                                   {msg.trackersBlocked !== undefined && msg.trackersBlocked > 0 && (
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '1rem', color: '#10b981', fontSize: '0.75rem', fontWeight: 800 }}>
@@ -1095,7 +1122,7 @@ const AdminDashboard: React.FC = () => {
                 letterSpacing: '0.05em'
               }} className="admin-visitor-header">
                 <span>Neural Hash</span>
-                <span>Relay Path</span>
+                <span className="hide-mobile">Relay Path</span>
                 <span className="hide-mobile">System Signature</span>
                 <span style={{ textAlign: 'right' }}>Timestamp</span>
               </div>
@@ -1123,7 +1150,7 @@ const AdminDashboard: React.FC = () => {
                       </div>
                     ))}
                   </div>
-                  <div style={{ overflow: 'hidden' }}>
+                  <div className="hide-mobile" style={{ overflow: 'hidden' }}>
                     <div className="badge" style={{
                       fontSize: '0.65rem',
                       background: 'rgba(182, 139, 245, 0.1)',
