@@ -1,8 +1,8 @@
 import React, { lazy, Suspense } from 'react';
 import { HelmetProvider } from 'react-helmet-async';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { Loader2 } from 'lucide-react';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -30,6 +30,14 @@ const LoadingFallback = () => (
   </div>
 );
 
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { isAuthenticated } = useAuth();
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  return <>{children}</>;
+};
+
 const AnimatedRoutes = () => {
   const location = useLocation();
   return (
@@ -37,13 +45,13 @@ const AnimatedRoutes = () => {
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={<PageWrapper><Home /></PageWrapper>} />
-          <Route path="/inbox" element={<PageWrapper><Inbox /></PageWrapper>} />
-          <Route path="/sendmail" element={<PageWrapper><SendMail /></PageWrapper>} />
+          <Route path="/inbox" element={<ProtectedRoute><PageWrapper><Inbox /></PageWrapper></ProtectedRoute>} />
+          <Route path="/sendmail" element={<ProtectedRoute><PageWrapper><SendMail /></PageWrapper></ProtectedRoute>} />
           <Route path="/login" element={<PageWrapper><Login /></PageWrapper>} />
           <Route path="/signup" element={<PageWrapper><Signup /></PageWrapper>} />
           <Route path="/features" element={<PageWrapper><Features /></PageWrapper>} />
-          <Route path="/admin" element={<PageWrapper><AdminDashboard /></PageWrapper>} />
-          <Route path="/profile" element={<PageWrapper><Profile /></PageWrapper>} />
+          <Route path="/admin" element={<ProtectedRoute><PageWrapper><AdminDashboard /></PageWrapper></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><PageWrapper><Profile /></PageWrapper></ProtectedRoute>} />
           <Route path="/privacy" element={<PageWrapper><Privacy /></PageWrapper>} />
           <Route path="/terms" element={<PageWrapper><Terms /></PageWrapper>} />
           <Route path="/suspended" element={<PageWrapper><Suspended /></PageWrapper>} />
