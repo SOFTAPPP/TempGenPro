@@ -50,8 +50,12 @@ async def get_all_users():
                 em_dict = dict(em)
                 em_dict["createdAt"] = em.createdAt.isoformat() if em.createdAt else None
                 if em.messages:
+                    formatted_messages = []
                     for m in em.messages:
-                        m.receivedAt = m.receivedAt.isoformat() if m.receivedAt else None
+                        m_dict = dict(m)
+                        m_dict["receivedAt"] = m.receivedAt.isoformat() if m.receivedAt else None
+                        formatted_messages.append(m_dict)
+                    em_dict["messages"] = formatted_messages
                 formatted_emails.append(em_dict)
             u_dict["tempEmails"] = formatted_emails
         formatted.append(u_dict)
