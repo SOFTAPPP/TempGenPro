@@ -153,16 +153,24 @@ const cleanRawEmail = (email: string): string => {
 
 const getEmailBodyToRender = (body: string): string => {
   if (!body) return '';
-  if (body.includes('--- mail_boundary ---')) {
+  const isHtml = /<\/?(html|body|div|p|br|table|strong|b|em|span|a|img|ul|li|h[1-6])[^>]*>/i.test(body) || body.includes('<!DOCTYPE');
+  
+  if (isHtml && body.includes('--- mail_boundary ---')) {
     const parts = body.split('--- mail_boundary ---');
     const htmlPart = parts.find(p => /<\/?[a-z][\s\S]*>/i.test(p) || p.includes('<!DOCTYPE'));
-    if (htmlPart) {
-      return htmlPart.trim();
-    }
-    const textPart = parts.find(p => p.trim().length > 0);
-    return textPart ? textPart.trim() : body;
+    return htmlPart ? htmlPart.trim() : body;
   }
   return body;
+};
+
+const getLinkContext = (subject: string, link: string) => {
+  const s = (subject || '').toLowerCase();
+  const l = (link || '').toLowerCase();
+  if (s.includes('password') || l.includes('password') || l.includes('reset')) return 'Reset Password';
+  if (s.includes('verify') || s.includes('confirm') || l.includes('verify') || l.includes('confirm')) return 'Verify Email';
+  if (s.includes('activate') || l.includes('activate')) return 'Activate Account';
+  if (s.includes('login') || s.includes('sign in') || l.includes('login') || l.includes('sign-in')) return 'Secure Login';
+  return 'Access Secure Link';
 };
 
 const extractOtpFromText = (subject: string, body: string): string | null => {
@@ -987,28 +995,8 @@ const AdminDashboard: React.FC = () => {
                                                   </div>
                                                   <div style={{ fontWeight: 900, marginBottom: '1.5rem', color: 'var(--text-bold)' }}>{msg.subject}</div>
 
-                                                  {msg.verificationLink ? (
-                                                    <div className="otp-card glass-card" style={{ padding: '1.5rem', borderRadius: '16px', border: '2px solid var(--primary)', marginBottom: '1.5rem', textAlign: 'center', background: 'rgba(182, 139, 245, 0.03)' }}>
-                                                      <p className="otp-title" style={{ fontSize: '0.65rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.3em', marginBottom: '0.75rem', color: 'var(--primary)' }}>ACTION REQUIRED</p>
-                                                      <div className="otp-code-display" style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--text-bold)', textShadow: '0 0 20px var(--primary-glow)', marginBottom: '0.5rem', fontFamily: 'Outfit, sans-serif', letterSpacing: 'normal' }}>Verification Link</div>
-                                                      <motion.a
-                                                        href={msg.verificationLink}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="btn btn-primary otp-btn"
-                                                        onClick={() => {
-                                                          navigator.clipboard.writeText(msg.verificationLink || '');
-                                                          showNotification('Verification link copied to clipboard');
-                                                        }}
-                                                        whileHover={{ scale: 1.03, translateY: -2 }}
-                                                        whileTap={{ scale: 0.97, translateY: 0 }}
-                                                        style={{ marginTop: '1rem', padding: '0.5rem 1.5rem', borderRadius: '10px', fontSize: '0.8rem', display: 'inline-flex', alignItems: 'center', gap: '6px', textDecoration: 'none' }}
-                                                      >
-                                                        Verify Email <ArrowRight size={14} />
-                                                      </motion.a>
-                                                    </div>
-                                                  ) : otpToRender ? (
-                                                    <div className="otp-card glass-card" style={{ padding: '1.5rem', borderRadius: '16px', border: '2px solid var(--primary)', marginBottom: '1.5rem', textAlign: 'center', background: 'rgba(182, 139, 245, 0.03)' }}>
+                                                  {otpToRender ? (
+                                                    <div className="otp-card glass-card" style={{ padding: '1.5rem', borderRadius: '16px', border: '2px solid var(--primary)', marginBottom: '1.5rem', textAlign: 'center', background: 'rgba(182, 139, 245, 0.03)', width: 'fit-content', margin: '0 auto 1.5rem auto' }}>
                                                       <p className="otp-title" style={{ fontSize: '0.65rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.3em', marginBottom: '0.75rem', color: 'var(--primary)' }}>SECURITY VERIFICATION CODE</p>
                                                       <div className="otp-code-display" style={{ fontSize: '2.5rem', fontWeight: 900, letterSpacing: '0.2em', fontFamily: 'monospace', color: 'var(--text-bold)', textShadow: '0 0 20px var(--primary-glow)' }}>{otpToRender}</div>
                                                       <motion.button
@@ -1020,6 +1008,25 @@ const AdminDashboard: React.FC = () => {
                                                       >
                                                         <Copy size={14} /> COPY CODE
                                                       </motion.button>
+                                                    </div>
+                                                  ) : msg.verificationLink ? (
+                                                    <div className="otp-card glass-card" style={{ padding: '1.5rem', borderRadius: '16px', border: '2px solid var(--primary)', marginBottom: '1.5rem', textAlign: 'center', background: 'rgba(182, 139, 245, 0.03)', width: 'fit-content', margin: '0 auto 1.5rem auto' }}>
+                                                      <p className="otp-title" style={{ fontSize: '0.65rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.3em', marginBottom: '0.75rem', color: 'var(--primary)' }}>ACTION REQUIRED</p>
+                                                      <motion.a
+                                                        href={msg.verificationLink}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="btn btn-primary otp-btn"
+                                                        onClick={() => {
+                                                          navigator.clipboard.writeText(msg.verificationLink || '');
+                                                          showNotification('Verification link copied to clipboard');
+                                                        }}
+                                                        whileHover={{ scale: 1.03, translateY: -2 }}
+                                                        whileTap={{ scale: 0.97, translateY: 0 }}
+                                                        style={{ marginTop: '0.5rem', padding: '0.8rem 2rem', borderRadius: '12px', fontSize: '0.9rem', fontWeight: 900, display: 'inline-flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}
+                                                      >
+                                                        {getLinkContext(msg.subject, msg.verificationLink)} <ArrowRight size={16} />
+                                                      </motion.a>
                                                     </div>
                                                   ) : null}
 

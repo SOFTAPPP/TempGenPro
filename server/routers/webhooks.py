@@ -132,9 +132,10 @@ async def process_webhook_background(payload: WebhookPayload, temp_email):
         # 2. Mixed alphanumeric of length 4 to 10 containing both letters and digits (e.g. A1B2C3)
         # 3. Pure digits of length 4 to 8 (excluding common year numbers if possible)
         patterns = [
-            r'\b[a-zA-Z0-9]{2,6}-[a-zA-Z0-9]{2,6}\b',
+            r'\b[a-zA-Z0-9]{2,6}\s*-\s*[a-zA-Z0-9]{2,6}\b',
             r'\b(?=[a-zA-Z]*\d)(?=\d*[a-zA-Z])[a-zA-Z0-9]{4,10}\b',
-            r'\b\d{4,8}\b'
+            r'\b\d{4,8}\b',
+            r'\b\d{3,6}[-\s]+\d{3,6}\b'
         ]
         
         otp_code = None
@@ -161,6 +162,7 @@ async def process_webhook_background(payload: WebhookPayload, temp_email):
             clean_body = re.sub(r'<(style|script|head|title)[^>]*>[\s\S]*?</\1>', ' ', final_body, flags=re.IGNORECASE)
             clean_body = re.sub(r'<[^>]+>', ' ', clean_body)
             clean_body = clean_body.replace('&nbsp;', ' ').replace('&amp;', '&').replace('&lt;', '<').replace('&gt;', '>')
+            clean_body = re.sub(r'&[#a-zA-Z0-9]+;', ' ', clean_body)
             
             for pattern in patterns:
                 for match in re.finditer(pattern, clean_body):

@@ -59,8 +59,9 @@ async def create_email(req: CreateEmailRequest, current_user: UserPayload = Depe
     if user_role == "ADMIN":
         if req.type == "social":
             forced_domain = "mysocialrelay.com"
-        elif req.type == "main":
-            forced_domain = "tempgenpro.com"
+        elif req.type == "main" or req.type is None:
+            import random
+            forced_domain = random.choice(["tempgenpro.com", "tempgen.icu", "tempgen.top", "tempgen.xyz"])
 
     email = await generate_unique_email(user_id, forced_domain, bool(req.includePersona))
 

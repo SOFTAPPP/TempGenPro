@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { AlertTriangle, ChevronLeft, Clock, Copy, Ghost, Inbox as InboxIcon, Mail, MessageSquare, Plus, RefreshCw, Shield, Trash2, Wand2, X, Zap, Send, Pen } from 'lucide-react';
+import { AlertTriangle, ChevronLeft, Clock, Copy, Ghost, Inbox as InboxIcon, Mail, MessageSquare, Plus, RefreshCw, Shield, Trash2, Wand2, X, Zap, Send, Pen, ArrowRight } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -119,6 +119,17 @@ const getEmailBodyToRender = (body: string): string => {
   return body;
 };
 
+const getLinkContext = (subject: string, link: string) => {
+  const s = (subject || '').toLowerCase();
+  const l = (link || '').toLowerCase();
+  if (s.includes('password') || l.includes('password') || l.includes('reset')) return 'Reset Password';
+  if (s.includes('verify') || s.includes('confirm') || l.includes('verify') || l.includes('confirm')) return 'Verify Email';
+  if (s.includes('activate') || l.includes('activate')) return 'Activate Account';
+  if (s.includes('login') || s.includes('sign in') || l.includes('login') || l.includes('sign-in')) return 'Secure Login';
+  return 'Access Secure Link';
+};
+
+
 const formatSender = (sender: string, subject?: string): string => {
   if (!sender) return 'Unknown';
   if (sender.startsWith('OUTBOUND:')) {
@@ -235,12 +246,14 @@ const extractOtpFromText = (subject: string, body: string): string | null => {
   const clean = cleanBody(body);
 
   const patterns = [
-    // Pattern 1: Hyphenated alphanumeric (e.g. WPW-YP3, G-123456)
-    /\b[a-zA-Z0-9]{2,6}-[a-zA-Z0-9]{2,6}\b/g,
+    // Pattern 1: Hyphenated alphanumeric (e.g. WPW-YP3, G-123456) with optional spaces
+    /\b[a-zA-Z0-9]{2,6}\s*-\s*[a-zA-Z0-9]{2,6}\b/g,
     // Pattern 2: Alphanumeric containing both letters and digits (e.g. A1B2C3)
     /\b(?=[a-zA-Z]*\d)(?=\d*[a-zA-Z])[a-zA-Z0-9]{4,10}\b/g,
     // Pattern 3: Pure digits (4 to 8 digits)
-    /\b\d{4,8}\b/g
+    /\b\d{4,8}\b/g,
+    // Pattern 4: Space separated digits like 123 456
+    /\b\d{3,6}[-\s]+\d{3,6}\b/g
   ];
 
   const yearBlacklist = ['2024', '2025', '2026', '2027', '2028', '2029', '2030'];
@@ -1137,8 +1150,81 @@ const Inbox: React.FC = () => {
                     {selectedThread.messages.slice().reverse().map((msg) => {
                       const bodyToRender = getEmailBodyToRender(msg.body);
                       const cleanBodyToRender = stripEmailQuotes(bodyToRender);
+                      const isHtml = /<\/?(html|body|div|p|br|table|strong|b|em|span|a|img|ul|li|h[1-6])[^>]*>/i.test(cleanBodyToRender) || cleanBodyToRender.includes('<!DOCTYPE');
+                      
                       const otpToRender = extractOtpFromText(msg.subject, bodyToRender) || msg.otpCode || null;
                       const isOutbound = msg.sender.startsWith('OUTBOUND:');
+                      if (isHtml) {
+                        return (
+                          <div key={msg.id} style={{ width: '100%', marginBottom: '2.5rem', opacity: msg.id === selectedThread.messages[0].id ? 1 : 0.8, transition: 'opacity 0.2s' }}>
+                            <div style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                               <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--primary)', color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900 }}>
+                                 {formatSender(msg.sender, msg.subject)[0].toUpperCase()}
+                               </div>
+                               <div>
+                                 <div style={{ fontWeight: 800 }}>{formatSender(msg.sender, msg.subject)}</div>
+                                 <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.6, marginTop: '4px' }}>
+                                   <div style={{ display: 'flex', gap: '8px' }}><span style={{ opacity: 0.5, width: '40px' }}>From:</span> <span>{msg.sender.includes('@') && msg.sender.split('@')[0].length > 25 ? `support@${msg.sender.split('@')[1]}` : msg.sender}</span></div>
+                                   <div style={{ display: 'flex', gap: '8px' }}><span style={{ opacity: 0.5, width: '40px' }}>To:</span> <span>{selectedEmail.email}</span></div>
+                                   <div style={{ display: 'flex', gap: '8px' }}><span style={{ opacity: 0.5, width: '40px' }}>Date:</span> <span>{new Date(msg.receivedAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}</span></div>
+                                 </div>
+                               </div>
+                            </div>
+                            
+                            {otpToRender ? (
+                               <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '2rem' }}>
+                                 <div style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(182, 139, 245, 0.3)', borderRadius: '20px', padding: '1.5rem 2.5rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', boxShadow: '0 8px 32px rgba(0,0,0,0.2)', width: 'fit-content' }}>
+                                   <div style={{ fontSize: '0.65rem', fontWeight: 900, letterSpacing: '0.3em', color: 'var(--primary)', marginBottom: '1rem', textTransform: 'uppercase' }}>SECURITY VERIFICATION CODE</div>
+                                   <div style={{ fontSize: '2.5rem', fontWeight: 900, letterSpacing: '0.3em', color: '#ffffff', textShadow: '0 0 20px rgba(255,255,255,0.3)', marginBottom: '1.5rem', fontFamily: 'monospace' }}>{otpToRender}</div>
+                                   <button onClick={() => copyToClipboard(otpToRender)} style={{ padding: '0.7rem 2rem', borderRadius: '10px', fontWeight: 800, fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'var(--primary)', color: '#000', border: 'none', cursor: 'pointer' }}><Copy size={16} /> COPY CODE</button>
+                                 </div>
+                               </div>
+                            ) : msg?.verificationLink ? (
+                               <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '2rem' }}>
+                                 <div style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(182, 139, 245, 0.3)', borderRadius: '20px', padding: '1.5rem 2.5rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', boxShadow: '0 8px 32px rgba(0,0,0,0.2)', width: 'fit-content' }}>
+                                   <div style={{ fontSize: '0.65rem', fontWeight: 900, letterSpacing: '0.3em', color: 'var(--primary)', marginBottom: '1.2rem', textTransform: 'uppercase' }}>ACTION REQUIRED</div>
+                                   <a href={msg.verificationLink} target="_blank" style={{ padding: '0.8rem 2.5rem', borderRadius: '12px', fontWeight: 900, fontSize: '1rem', display: 'inline-flex', alignItems: 'center', gap: '10px', background: 'var(--primary)', color: '#000', textDecoration: 'none', cursor: 'pointer', boxShadow: '0 4px 15px rgba(182, 139, 245, 0.4)' }}>
+                                     {getLinkContext(msg.subject, msg.verificationLink)} <ArrowRight size={18} />
+                                   </a>
+                                 </div>
+                               </div>
+                            ) : null}
+
+                            <div style={{ width: '100%', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border-light)', background: '#ffffff', minHeight: '600px' }}>
+                               <iframe
+                                  title="Packet Content"
+                                  srcDoc={`
+                                    <html>
+                                      <head>
+                                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                                        <base target="_blank">
+                                        <style>
+                                          html, body {
+                                            margin: 0; padding: 0; background-color: #ffffff; color: #222222;
+                                            max-width: 100% !important; overflow-x: hidden !important;
+                                          }
+                                          body {
+                                            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                                            padding: 24px; line-height: 1.5; box-sizing: border-box !important;
+                                          }
+                                          img { max-width: 100% !important; height: auto !important; }
+                                          a { color: #b68bf5; text-decoration: underline; }
+                                          * { box-sizing: border-box !important; }
+                                          table { width: 100% !important; }
+                                          td { word-break: break-word !important; }
+                                        </style>
+                                      </head>
+                                      <body>${cleanBodyToRender}</body>
+                                    </html>
+                                  `}
+                                  sandbox="allow-popups allow-popups-to-escape-sandbox"
+                                  style={{ width: '100%', height: '100%', minHeight: '600px', border: 'none', background: '#ffffff' }}
+                               />
+                            </div>
+                          </div>
+                        );
+                      }
+
                       return (
                       <div key={msg.id} style={{ 
                         opacity: msg.id === selectedThread.messages[0].id ? 1 : 0.8, 
@@ -1162,20 +1248,26 @@ const Inbox: React.FC = () => {
                             borderBottomRightRadius: isOutbound ? '4px' : '20px',
                             border: isOutbound ? 'none' : '1px solid var(--border-light)',
                           }}>
-                             {otpToRender && (
-                                <div style={{ background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '12px', marginBottom: '1rem', textAlign: 'center' }}>
-                                  <div style={{ fontSize: '0.65rem', fontWeight: 900, letterSpacing: '0.2em', color: isOutbound ? '#000' : 'var(--primary)', marginBottom: '0.5rem' }}>VERIFICATION CODE</div>
-                                  <div style={{ fontSize: '2rem', fontWeight: 900, letterSpacing: '0.2em' }}>{otpToRender}</div>
+                             {otpToRender ? (
+                                <div style={{ display: 'flex', justifyContent: isOutbound ? 'flex-end' : 'flex-start', marginBottom: '1rem' }}>
+                                  <div style={{ background: isOutbound ? 'rgba(0,0,0,0.1)' : 'rgba(255, 255, 255, 0.02)', border: isOutbound ? 'none' : '1px solid rgba(182, 139, 245, 0.3)', borderRadius: '20px', padding: '1.5rem 2.5rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', width: 'fit-content' }}>
+                                    <div style={{ fontSize: '0.65rem', fontWeight: 900, letterSpacing: '0.3em', color: isOutbound ? '#000' : 'var(--primary)', marginBottom: '1rem', textTransform: 'uppercase' }}>SECURITY VERIFICATION CODE</div>
+                                    <div style={{ fontSize: '2.5rem', fontWeight: 900, letterSpacing: '0.3em', color: isOutbound ? '#000' : '#ffffff', textShadow: isOutbound ? 'none' : '0 0 20px rgba(255,255,255,0.3)', marginBottom: '1.5rem', fontFamily: 'monospace' }}>{otpToRender}</div>
+                                    <button onClick={() => copyToClipboard(otpToRender)} style={{ padding: '0.7rem 2rem', borderRadius: '10px', fontWeight: 800, fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', gap: '8px', background: isOutbound ? '#000' : 'var(--primary)', color: isOutbound ? 'var(--primary)' : '#000', border: 'none', cursor: 'pointer' }}><Copy size={16} /> COPY CODE</button>
+                                  </div>
                                 </div>
-                             )}
-
-                             {msg?.verificationLink && (
-                                <div style={{ background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '12px', marginBottom: '1rem', textAlign: 'center' }}>
-                                   <a href={msg.verificationLink} target="_blank" className="btn btn-sm" style={{ background: isOutbound ? '#000' : 'var(--primary)', color: isOutbound ? 'var(--primary)' : '#000', textDecoration: 'none', padding: '0.5rem 1rem' }}>VERIFY LINK</a>
+                             ) : msg?.verificationLink ? (
+                                <div style={{ display: 'flex', justifyContent: isOutbound ? 'flex-end' : 'flex-start', marginBottom: '1rem' }}>
+                                  <div style={{ background: isOutbound ? 'rgba(0,0,0,0.1)' : 'rgba(255, 255, 255, 0.02)', border: isOutbound ? 'none' : '1px solid rgba(182, 139, 245, 0.3)', borderRadius: '20px', padding: '1.5rem 2.5rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', width: 'fit-content' }}>
+                                    <div style={{ fontSize: '0.65rem', fontWeight: 900, letterSpacing: '0.3em', color: isOutbound ? '#000' : 'var(--primary)', marginBottom: '1.2rem', textTransform: 'uppercase' }}>ACTION REQUIRED</div>
+                                    <a href={msg.verificationLink} target="_blank" style={{ padding: '0.8rem 2.5rem', borderRadius: '12px', fontWeight: 900, fontSize: '1rem', display: 'inline-flex', alignItems: 'center', gap: '10px', background: isOutbound ? '#000' : 'var(--primary)', color: isOutbound ? 'var(--primary)' : '#000', textDecoration: 'none', cursor: 'pointer', boxShadow: '0 4px 15px rgba(182, 139, 245, 0.4)' }}>
+                                      {getLinkContext(msg.subject, msg.verificationLink)} <ArrowRight size={18} />
+                                    </a>
+                                  </div>
                                 </div>
-                             )}
+                             ) : null}
 
-                             <div style={{ fontSize: '1.05rem', lineHeight: 1.6, whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
+                             <div style={{ fontSize: '1.05rem', lineHeight: 1.6, whiteSpace: 'pre-wrap', wordBreak: 'break-all', width: '100%' }}>
                                {renderMessageBody(cleanBodyToRender)}
                              </div>
                           </div>
@@ -1203,7 +1295,7 @@ const Inbox: React.FC = () => {
                   </div>
                 </div>
 
-                {user?.role === 'ADMIN' && (
+                {user?.role === 'ADMIN' && selectedThread?.messages[0] && !(/<\/?(html|body|div|p|br|table|strong|b|em|span|a|img|ul|li|h[1-6])[^>]*>/i.test(stripEmailQuotes(getEmailBodyToRender(selectedThread.messages[0].body))) || getEmailBodyToRender(selectedThread.messages[0].body).includes('<!DOCTYPE')) && (
                   <div style={{ 
                     padding: '1.5rem 2rem', 
                     borderTop: '1px solid var(--border)', 
@@ -1359,10 +1451,12 @@ const Inbox: React.FC = () => {
                             gap: '2.5rem'
                           }}
                         >
-                          <div className="gmail-row-sender" style={{ width: '180px', flexShrink: 0, fontWeight: 900, fontSize: '0.95rem', color: 'var(--text-bold)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <div className="gmail-row-sender" style={{ width: '180px', flexShrink: 0, fontWeight: 900, fontSize: '0.95rem', color: 'var(--text-bold)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '10px' }}>
                             {thread.participant}
-                            {thread.messages.length > 1 && (
-                              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 800 }}>({thread.messages.length})</span>
+                            {thread.messages.length > 0 && (
+                              <span style={{ fontSize: '0.75rem', background: 'var(--primary)', color: '#000', padding: '2px 8px', borderRadius: '12px', fontWeight: 900 }}>
+                                {thread.messages.length}
+                              </span>
                             )}
                           </div>
                           <div className="gmail-row-body" style={{ flex: 1, display: 'flex', gap: '0.75rem', minWidth: 0, alignItems: 'baseline' }}>
