@@ -19,17 +19,45 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
+  const checkExternalNavigation = () => {
+    try {
+      const navEntries = performance.getEntriesByType("navigation");
+      if (navEntries.length > 0 && (navEntries[0] as PerformanceNavigationTiming).type === "back_forward") {
+        return true;
+      }
+    } catch (e) {}
+    return false;
+  };
 
-  useEffect(() => {
-    const savedToken = sessionStorage.getItem('token');
-    const savedUser = sessionStorage.getItem('user');
-    if (savedToken && savedUser) {
-      setToken(savedToken);
-      const parsedUser = JSON.parse(savedUser);
-      setUser(parsedUser);
+  const [user, setUser] = useState<User | null>(() => {
+    if (checkExternalNavigation()) {
+      sessionStorage.removeItem('user');
+      sessionStorage.removeItem('token');
+      return null;
     }
+    const savedUser = sessionStorage.getItem('user');
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
+  
+  const [token, setToken] = useState<string | null>(() => {
+    if (checkExternalNavigation()) return null;
+    return sessionStorage.getItem('token');
+  });
+
+  // Handle BFCache (Back-Forward Cache) restoration
+  useEffect(() => {
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) {
+        // The page was restored from the browser's Back/Forward cache (external navigation)
+        sessionStorage.removeItem('user');
+        sessionStorage.removeItem('token');
+        setUser(null);
+        setToken(null);
+        window.location.replace('/login');
+      }
+    };
+    window.addEventListener('pageshow', handlePageShow);
+    return () => window.removeEventListener('pageshow', handlePageShow);
   }, []);
 
   // ⚡ Universal Kick Monitor (Ban or Deletion)

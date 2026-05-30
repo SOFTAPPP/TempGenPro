@@ -1171,21 +1171,33 @@ const Inbox: React.FC = () => {
                                </div>
                             </div>
                             
-                            {otpToRender ? (
+                            {msg?.verificationLink ? (
                                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '2rem' }}>
-                                 <div style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(182, 139, 245, 0.3)', borderRadius: '20px', padding: '1.5rem 2.5rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', boxShadow: '0 8px 32px rgba(0,0,0,0.2)', width: 'fit-content' }}>
-                                   <div style={{ fontSize: '0.65rem', fontWeight: 900, letterSpacing: '0.3em', color: 'var(--primary)', marginBottom: '1rem', textTransform: 'uppercase' }}>SECURITY VERIFICATION CODE</div>
-                                   <div style={{ fontSize: '2.5rem', fontWeight: 900, letterSpacing: '0.3em', color: '#ffffff', textShadow: '0 0 20px rgba(255,255,255,0.3)', marginBottom: '1.5rem', fontFamily: 'monospace' }}>{otpToRender}</div>
-                                   <button onClick={() => copyToClipboard(otpToRender)} style={{ padding: '0.7rem 2rem', borderRadius: '10px', fontWeight: 800, fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'var(--primary)', color: '#000', border: 'none', cursor: 'pointer' }}><Copy size={16} /> COPY CODE</button>
+                                 <div className="otp-card glass-card" style={{ background: 'rgba(182, 139, 245, 0.03)', border: '2px solid var(--primary)', borderRadius: '24px', padding: '2.5rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', boxShadow: '0 8px 32px rgba(0,0,0,0.2)', width: 'fit-content' }}>
+                                   <div style={{ fontSize: '0.75rem', fontWeight: 900, letterSpacing: '0.3em', color: 'var(--primary)', marginBottom: '1.5rem', textTransform: 'uppercase' }}>ACTION REQUIRED</div>
+                                   <motion.a 
+                                     href={msg.verificationLink} 
+                                     target="_blank" 
+                                     rel="noopener noreferrer" 
+                                     className="btn btn-primary otp-btn" 
+                                     onClick={() => {
+                                       navigator.clipboard.writeText(msg.verificationLink || '');
+                                       showNotification('Verification link copied to clipboard');
+                                     }}
+                                     whileHover={{ scale: 1.03, translateY: -2 }} 
+                                     whileTap={{ scale: 0.97, translateY: 0 }} 
+                                     style={{ padding: '1rem 3rem', borderRadius: '14px', fontWeight: 900, fontSize: '1rem', display: 'inline-flex', alignItems: 'center', gap: '10px', background: 'var(--primary)', color: '#000', textDecoration: 'none', cursor: 'pointer', boxShadow: '0 4px 15px rgba(182, 139, 245, 0.4)' }}
+                                   >
+                                     {getLinkContext(msg.subject, msg.verificationLink)} <ArrowRight size={20} />
+                                   </motion.a>
                                  </div>
                                </div>
-                            ) : msg?.verificationLink ? (
+                            ) : otpToRender ? (
                                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '2rem' }}>
-                                 <div style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(182, 139, 245, 0.3)', borderRadius: '20px', padding: '1.5rem 2.5rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', boxShadow: '0 8px 32px rgba(0,0,0,0.2)', width: 'fit-content' }}>
-                                   <div style={{ fontSize: '0.65rem', fontWeight: 900, letterSpacing: '0.3em', color: 'var(--primary)', marginBottom: '1.2rem', textTransform: 'uppercase' }}>ACTION REQUIRED</div>
-                                   <a href={msg.verificationLink} target="_blank" style={{ padding: '0.8rem 2.5rem', borderRadius: '12px', fontWeight: 900, fontSize: '1rem', display: 'inline-flex', alignItems: 'center', gap: '10px', background: 'var(--primary)', color: '#000', textDecoration: 'none', cursor: 'pointer', boxShadow: '0 4px 15px rgba(182, 139, 245, 0.4)' }}>
-                                     {getLinkContext(msg.subject, msg.verificationLink)} <ArrowRight size={18} />
-                                   </a>
+                                 <div className="otp-card glass-card" style={{ background: 'rgba(182, 139, 245, 0.03)', border: '2px solid var(--primary)', borderRadius: '24px', padding: '2.5rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', boxShadow: '0 8px 32px rgba(0,0,0,0.2)', width: 'fit-content' }}>
+                                   <div style={{ fontSize: '0.75rem', fontWeight: 900, letterSpacing: '0.3em', color: 'var(--primary)', marginBottom: '1.5rem', textTransform: 'uppercase' }}>SECURITY VERIFICATION CODE</div>
+                                   <div className="otp-code-display" style={{ fontSize: '4rem', fontWeight: 900, letterSpacing: '0.4em', fontFamily: 'monospace', color: 'var(--text-bold)', textShadow: '0 0 20px var(--primary-glow)', marginBottom: '1.5rem' }}>{otpToRender}</div>
+                                   <motion.button onClick={() => copyToClipboard(otpToRender)} className="btn btn-primary otp-btn" whileHover={{ scale: 1.03, translateY: -2 }} whileTap={{ scale: 0.97, translateY: 0 }} style={{ padding: '1rem 3rem', borderRadius: '14px', fontWeight: 900, fontSize: '1rem', display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'var(--primary)', color: '#000', border: 'none', cursor: 'pointer', boxShadow: '0 4px 15px rgba(182, 139, 245, 0.4)' }}><Copy size={20} /> COPY CODE</motion.button>
                                  </div>
                                </div>
                             ) : null}
@@ -1232,37 +1244,48 @@ const Inbox: React.FC = () => {
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: isOutbound ? 'flex-end' : 'flex-start',
-                        marginBottom: '1rem'
+                        marginBottom: '1rem',
+                        width: '100%'
                       }}>
-                        <div style={{ display: 'flex', alignItems: 'flex-end', gap: '10px', maxWidth: '80%', flexDirection: isOutbound ? 'row-reverse' : 'row' }}>
+                        <div className="inbox-thread-msg-bubble-wrapper" style={{ display: 'flex', alignItems: 'flex-end', gap: '10px', flexDirection: isOutbound ? 'row-reverse' : 'row' }}>
                           <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: isOutbound ? 'var(--primary)' : 'rgba(255,255,255,0.1)', color: isOutbound ? '#000' : 'var(--text-bold)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '1rem', flexShrink: 0 }}>
                             {formatSender(msg.sender, msg.subject)[0].toUpperCase()}
                           </div>
                           
-                          <div style={{
+                          <div className="inbox-thread-msg-bubble-content" style={{
                             background: isOutbound ? 'var(--primary)' : 'rgba(255, 255, 255, 0.05)',
                             color: isOutbound ? '#000' : 'var(--text)',
-                            padding: '1.25rem 1.5rem',
-                            borderRadius: '20px',
                             borderBottomLeftRadius: isOutbound ? '20px' : '4px',
                             borderBottomRightRadius: isOutbound ? '4px' : '20px',
                             border: isOutbound ? 'none' : '1px solid var(--border-light)',
                           }}>
-                             {otpToRender ? (
-                                <div style={{ display: 'flex', justifyContent: isOutbound ? 'flex-end' : 'flex-start', marginBottom: '1rem' }}>
-                                  <div style={{ background: isOutbound ? 'rgba(0,0,0,0.1)' : 'rgba(255, 255, 255, 0.02)', border: isOutbound ? 'none' : '1px solid rgba(182, 139, 245, 0.3)', borderRadius: '20px', padding: '1.5rem 2.5rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', width: 'fit-content' }}>
-                                    <div style={{ fontSize: '0.65rem', fontWeight: 900, letterSpacing: '0.3em', color: isOutbound ? '#000' : 'var(--primary)', marginBottom: '1rem', textTransform: 'uppercase' }}>SECURITY VERIFICATION CODE</div>
-                                    <div style={{ fontSize: '2.5rem', fontWeight: 900, letterSpacing: '0.3em', color: isOutbound ? '#000' : '#ffffff', textShadow: isOutbound ? 'none' : '0 0 20px rgba(255,255,255,0.3)', marginBottom: '1.5rem', fontFamily: 'monospace' }}>{otpToRender}</div>
-                                    <button onClick={() => copyToClipboard(otpToRender)} style={{ padding: '0.7rem 2rem', borderRadius: '10px', fontWeight: 800, fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', gap: '8px', background: isOutbound ? '#000' : 'var(--primary)', color: isOutbound ? 'var(--primary)' : '#000', border: 'none', cursor: 'pointer' }}><Copy size={16} /> COPY CODE</button>
+                             {msg?.verificationLink ? (
+                                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
+                                  <div className="otp-card glass-card" style={{ background: isOutbound ? 'rgba(0,0,0,0.1)' : 'rgba(182, 139, 245, 0.03)', border: isOutbound ? 'none' : '2px solid var(--primary)', borderRadius: '24px', padding: '2.5rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', width: 'fit-content', boxShadow: isOutbound ? 'none' : '0 8px 32px rgba(0,0,0,0.2)' }}>
+                                    <div style={{ fontSize: '0.75rem', fontWeight: 900, letterSpacing: '0.3em', color: isOutbound ? '#000' : 'var(--primary)', marginBottom: '1.5rem', textTransform: 'uppercase' }}>ACTION REQUIRED</div>
+                                    <motion.a 
+                                      href={msg.verificationLink} 
+                                      target="_blank" 
+                                      rel="noopener noreferrer" 
+                                      className="btn btn-primary otp-btn" 
+                                      onClick={() => {
+                                        navigator.clipboard.writeText(msg.verificationLink || '');
+                                        showNotification('Verification link copied to clipboard');
+                                      }}
+                                      whileHover={{ scale: 1.03, translateY: -2 }} 
+                                      whileTap={{ scale: 0.97, translateY: 0 }} 
+                                      style={{ padding: '1rem 3rem', borderRadius: '14px', fontWeight: 900, fontSize: '1rem', display: 'inline-flex', alignItems: 'center', gap: '10px', background: 'var(--primary)', color: '#000', textDecoration: 'none', cursor: 'pointer', boxShadow: '0 4px 15px rgba(182, 139, 245, 0.4)' }}
+                                    >
+                                      {getLinkContext(msg.subject, msg.verificationLink)} <ArrowRight size={20} />
+                                    </motion.a>
                                   </div>
                                 </div>
-                             ) : msg?.verificationLink ? (
-                                <div style={{ display: 'flex', justifyContent: isOutbound ? 'flex-end' : 'flex-start', marginBottom: '1rem' }}>
-                                  <div style={{ background: isOutbound ? 'rgba(0,0,0,0.1)' : 'rgba(255, 255, 255, 0.02)', border: isOutbound ? 'none' : '1px solid rgba(182, 139, 245, 0.3)', borderRadius: '20px', padding: '1.5rem 2.5rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', width: 'fit-content' }}>
-                                    <div style={{ fontSize: '0.65rem', fontWeight: 900, letterSpacing: '0.3em', color: isOutbound ? '#000' : 'var(--primary)', marginBottom: '1.2rem', textTransform: 'uppercase' }}>ACTION REQUIRED</div>
-                                    <a href={msg.verificationLink} target="_blank" style={{ padding: '0.8rem 2.5rem', borderRadius: '12px', fontWeight: 900, fontSize: '1rem', display: 'inline-flex', alignItems: 'center', gap: '10px', background: isOutbound ? '#000' : 'var(--primary)', color: isOutbound ? 'var(--primary)' : '#000', textDecoration: 'none', cursor: 'pointer', boxShadow: '0 4px 15px rgba(182, 139, 245, 0.4)' }}>
-                                      {getLinkContext(msg.subject, msg.verificationLink)} <ArrowRight size={18} />
-                                    </a>
+                             ) : otpToRender ? (
+                                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
+                                  <div className="otp-card glass-card" style={{ background: isOutbound ? 'rgba(0,0,0,0.1)' : 'rgba(182, 139, 245, 0.03)', border: isOutbound ? 'none' : '2px solid var(--primary)', borderRadius: '24px', padding: '2.5rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', width: 'fit-content', boxShadow: isOutbound ? 'none' : '0 8px 32px rgba(0,0,0,0.2)' }}>
+                                    <div style={{ fontSize: '0.75rem', fontWeight: 900, letterSpacing: '0.3em', color: isOutbound ? '#000' : 'var(--primary)', marginBottom: '1.5rem', textTransform: 'uppercase' }}>SECURITY VERIFICATION CODE</div>
+                                    <div className="otp-code-display" style={{ fontSize: '3.5rem', fontWeight: 900, letterSpacing: '0.3em', color: isOutbound ? '#000' : '#ffffff', textShadow: isOutbound ? 'none' : '0 0 20px rgba(255,255,255,0.3)', marginBottom: '1.5rem', fontFamily: 'monospace' }}>{otpToRender}</div>
+                                    <motion.button onClick={() => copyToClipboard(otpToRender)} className="btn btn-primary otp-btn" whileHover={{ scale: 1.03, translateY: -2 }} whileTap={{ scale: 0.97, translateY: 0 }} style={{ padding: '1rem 3rem', borderRadius: '14px', fontWeight: 900, fontSize: '1rem', display: 'inline-flex', alignItems: 'center', gap: '8px', background: isOutbound ? '#000' : 'var(--primary)', color: isOutbound ? 'var(--primary)' : '#000', border: 'none', cursor: 'pointer', boxShadow: '0 4px 15px rgba(182, 139, 245, 0.4)' }}><Copy size={20} /> COPY CODE</motion.button>
                                   </div>
                                 </div>
                              ) : null}
@@ -1296,8 +1319,7 @@ const Inbox: React.FC = () => {
                 </div>
 
                 {user?.role === 'ADMIN' && selectedThread?.messages[0] && !(/<\/?(html|body|div|p|br|table|strong|b|em|span|a|img|ul|li|h[1-6])[^>]*>/i.test(stripEmailQuotes(getEmailBodyToRender(selectedThread.messages[0].body))) || getEmailBodyToRender(selectedThread.messages[0].body).includes('<!DOCTYPE')) && (
-                  <div style={{ 
-                    padding: '1.5rem 2rem', 
+                  <div className="inbox-reply-container" style={{ 
                     borderTop: '1px solid var(--border)', 
                     background: 'rgba(0,0,0,0.3)',
                     backdropFilter: 'blur(10px)'
@@ -1453,11 +1475,6 @@ const Inbox: React.FC = () => {
                         >
                           <div className="gmail-row-sender" style={{ width: '180px', flexShrink: 0, fontWeight: 900, fontSize: '0.95rem', color: 'var(--text-bold)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '10px' }}>
                             {thread.participant}
-                            {thread.messages.length > 0 && (
-                              <span style={{ fontSize: '0.75rem', background: 'var(--primary)', color: '#000', padding: '2px 8px', borderRadius: '12px', fontWeight: 900 }}>
-                                {thread.messages.length}
-                              </span>
-                            )}
                           </div>
                           <div className="gmail-row-body" style={{ flex: 1, display: 'flex', gap: '0.75rem', minWidth: 0, alignItems: 'baseline' }}>
                             <span className="gmail-subject" style={{ fontWeight: 800, color: 'var(--text-bold)', whiteSpace: 'nowrap', fontSize: '0.95rem', overflow: 'hidden', textOverflow: 'ellipsis' }}>{thread.subject}</span>

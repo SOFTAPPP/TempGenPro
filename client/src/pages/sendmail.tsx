@@ -155,13 +155,14 @@ const SendMail: React.FC = () => {
                 
                 {/* From Field */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                  <label htmlFor="from-select" style={{ fontSize: '0.75rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-muted)' }}>From (Select Relay Node)</label>
+                  <label htmlFor="from-email" style={{ fontSize: '0.75rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-muted)' }}>From (Relay Node)</label>
                   <div style={{ position: 'relative' }}>
                     <Mail size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', pointerEvents: 'none' }} />
-                    <select
-                      id="from-select"
+                    <input
+                      type="text"
+                      id="from-email"
                       value={selectedFrom}
-                      onChange={(e) => setSelectedFrom(e.target.value)}
+                      readOnly
                       required
                       style={{ 
                         width: '100%', 
@@ -172,19 +173,10 @@ const SendMail: React.FC = () => {
                         color: 'var(--text-bold)', 
                         fontSize: '0.95rem', 
                         transition: 'all 0.3s',
-                        appearance: 'none',
                         outline: 'none',
-                        cursor: 'pointer'
+                        cursor: 'default'
                       }}
-                    >
-                      {emails.map((e) => (
-                        <option key={e.id} value={e.email} style={{ background: 'var(--bg-secondary)', color: 'var(--text-bold)' }}>
-                          {e.email}
-                        </option>
-                      ))}
-                    </select>
-                    {/* Custom Arrow */}
-                    <div style={{ position: 'absolute', right: '16px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', width: '0', height: '0', borderLeft: '5px solid transparent', borderRight: '5px solid transparent', borderTop: '6px solid var(--text-muted)' }}></div>
+                    />
                   </div>
                 </div>
 

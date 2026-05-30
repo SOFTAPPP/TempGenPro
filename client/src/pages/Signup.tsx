@@ -48,9 +48,9 @@ const Signup: React.FC = () => {
   React.useEffect(() => {
     if (isAuthenticated) {
       if (user?.role === 'ADMIN') {
-        navigate('/admin');
+        navigate('/admin', { replace: true });
       } else {
-        navigate('/inbox');
+        navigate('/inbox', { replace: true });
       }
     }
   }, [isAuthenticated, user, navigate]);
@@ -67,7 +67,7 @@ const Signup: React.FC = () => {
       } else {
         // Fallback if verification isn't required by backend
         login(res.data.user, res.data.token);
-        navigate('/inbox');
+        navigate('/inbox', { replace: true });
       }
     } catch (err: any) {
       setError(err.response?.data?.detail || err.response?.data?.error || 'Registration failed');
@@ -84,7 +84,7 @@ const Signup: React.FC = () => {
       const res = await api.post('/auth/verify-email', { email, otp });
       showNotification("Email verified successfully!", "success");
       login(res.data.user, res.data.token);
-      navigate('/inbox');
+      navigate('/inbox', { replace: true });
     } catch (err: any) {
       setError(err.response?.data?.detail || err.response?.data?.error || 'Verification failed');
     } finally {
@@ -106,7 +106,7 @@ const Signup: React.FC = () => {
       const res = await api.post('/auth/oauth/google', { token: credentialResponse.credential });
       login(res.data.user, res.data.token);
       showNotification("Logged in with Google successfully!", "success");
-      navigate('/inbox');
+      navigate('/inbox', { replace: true });
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Google authentication failed');
     }

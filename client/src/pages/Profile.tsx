@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion';
-import { Activity, ArrowLeft, Calendar, Key, Mail, MessageSquare, Shield, User } from 'lucide-react';
+import { Activity, Calendar, Key, Mail, MessageSquare, Shield, User } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 
@@ -44,11 +43,8 @@ const Profile: React.FC = () => {
   }
 
   return (
-    <div className="container" style={{ padding: '4rem 1.25rem' }}>
-      <header style={{ marginBottom: '4rem', textAlign: 'center' }}>
-        <Link to="/inbox" className="btn btn-secondary btn-sm" style={{ marginBottom: '2rem', gap: '0.5rem' }}>
-          <ArrowLeft size={16} /> Back to Hub
-        </Link>
+    <div className="container" style={{ padding: '0 1.25rem 4rem 1.25rem' }}>
+      <header style={{ paddingTop: '3.5rem', marginBottom: '5.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
         <div className="badge mb-3">Member Intelligence</div>
         <h1 style={{ fontSize: '3.5rem', fontWeight: 900, marginBottom: '1rem', letterSpacing: '-0.02em', color: 'var(--text-bold)' }}>Account Nexus</h1>
         <p style={{ color: 'var(--text-muted)', fontSize: '1.2rem', maxWidth: '600px', margin: '0 auto' }}>Manage your digital identity and relay performance.</p>
@@ -133,7 +129,7 @@ const Profile: React.FC = () => {
           >
             <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '2rem' }}>Security Protocol</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <button className="btn btn-secondary" style={{ width: '100%', justifyContent: 'flex-start' }}>
+              <button className="btn btn-secondary" style={{ width: '100%', justifyContent: 'center', gap: '8px' }}>
                 <Key size={18} /> Cycle Access Key (Password)
               </button>
               <button
@@ -142,7 +138,7 @@ const Profile: React.FC = () => {
                   window.location.href = '/login';
                 }}
                 className="btn btn-outline"
-                style={{ width: '100%', justifyContent: 'flex-start', color: '#ef4444', borderColor: 'rgba(239, 68, 68, 0.2)' }}
+                style={{ width: '100%', justifyContent: 'center', gap: '8px', color: '#ef4444', borderColor: 'rgba(239, 68, 68, 0.2)' }}
               >
                 <Shield size={18} /> Terminate Current Session
               </button>

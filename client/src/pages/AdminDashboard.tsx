@@ -995,23 +995,9 @@ const AdminDashboard: React.FC = () => {
                                                   </div>
                                                   <div style={{ fontWeight: 900, marginBottom: '1.5rem', color: 'var(--text-bold)' }}>{msg.subject}</div>
 
-                                                  {otpToRender ? (
-                                                    <div className="otp-card glass-card" style={{ padding: '1.5rem', borderRadius: '16px', border: '2px solid var(--primary)', marginBottom: '1.5rem', textAlign: 'center', background: 'rgba(182, 139, 245, 0.03)', width: 'fit-content', margin: '0 auto 1.5rem auto' }}>
-                                                      <p className="otp-title" style={{ fontSize: '0.65rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.3em', marginBottom: '0.75rem', color: 'var(--primary)' }}>SECURITY VERIFICATION CODE</p>
-                                                      <div className="otp-code-display" style={{ fontSize: '2.5rem', fontWeight: 900, letterSpacing: '0.2em', fontFamily: 'monospace', color: 'var(--text-bold)', textShadow: '0 0 20px var(--primary-glow)' }}>{otpToRender}</div>
-                                                      <motion.button
-                                                        onClick={() => { navigator.clipboard.writeText(otpToRender); showNotification('Copied to clipboard'); }}
-                                                        className="btn btn-primary otp-btn"
-                                                        whileHover={{ scale: 1.03, translateY: -2 }}
-                                                        whileTap={{ scale: 0.97, translateY: 0 }}
-                                                        style={{ marginTop: '1rem', padding: '0.5rem 1.5rem', borderRadius: '10px', fontSize: '0.8rem', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-                                                      >
-                                                        <Copy size={14} /> COPY CODE
-                                                      </motion.button>
-                                                    </div>
-                                                  ) : msg.verificationLink ? (
-                                                    <div className="otp-card glass-card" style={{ padding: '1.5rem', borderRadius: '16px', border: '2px solid var(--primary)', marginBottom: '1.5rem', textAlign: 'center', background: 'rgba(182, 139, 245, 0.03)', width: 'fit-content', margin: '0 auto 1.5rem auto' }}>
-                                                      <p className="otp-title" style={{ fontSize: '0.65rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.3em', marginBottom: '0.75rem', color: 'var(--primary)' }}>ACTION REQUIRED</p>
+                                                  {msg.verificationLink ? (
+                                                    <div className="otp-card glass-card" style={{ padding: '2.5rem', borderRadius: '24px', border: '2px solid var(--primary)', marginBottom: '1.5rem', textAlign: 'center', background: 'rgba(182, 139, 245, 0.03)', width: 'fit-content', margin: '0 auto 2rem auto', display: 'flex', flexDirection: 'column', alignItems: 'center', boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
+                                                      <p className="otp-title" style={{ fontSize: '0.75rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.3em', marginBottom: '1.5rem', color: 'var(--primary)' }}>ACTION REQUIRED</p>
                                                       <motion.a
                                                         href={msg.verificationLink}
                                                         target="_blank"
@@ -1023,10 +1009,24 @@ const AdminDashboard: React.FC = () => {
                                                         }}
                                                         whileHover={{ scale: 1.03, translateY: -2 }}
                                                         whileTap={{ scale: 0.97, translateY: 0 }}
-                                                        style={{ marginTop: '0.5rem', padding: '0.8rem 2rem', borderRadius: '12px', fontSize: '0.9rem', fontWeight: 900, display: 'inline-flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}
+                                                        style={{ padding: '1rem 3rem', borderRadius: '14px', fontSize: '1rem', fontWeight: 900, display: 'inline-flex', alignItems: 'center', gap: '10px', textDecoration: 'none', background: 'var(--primary)', color: '#000', cursor: 'pointer', boxShadow: '0 4px 15px rgba(182, 139, 245, 0.4)' }}
                                                       >
-                                                        {getLinkContext(msg.subject, msg.verificationLink)} <ArrowRight size={16} />
+                                                        {getLinkContext(msg.subject, msg.verificationLink)} <ArrowRight size={20} />
                                                       </motion.a>
+                                                    </div>
+                                                  ) : otpToRender ? (
+                                                    <div className="otp-card glass-card" style={{ padding: '2.5rem', borderRadius: '24px', border: '2px solid var(--primary)', marginBottom: '1.5rem', textAlign: 'center', background: 'rgba(182, 139, 245, 0.03)', width: 'fit-content', margin: '0 auto 2rem auto', display: 'flex', flexDirection: 'column', alignItems: 'center', boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
+                                                      <p className="otp-title" style={{ fontSize: '0.75rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.3em', marginBottom: '1.5rem', color: 'var(--primary)' }}>SECURITY VERIFICATION CODE</p>
+                                                      <div className="otp-code-display" style={{ fontSize: '4rem', fontWeight: 900, letterSpacing: '0.4em', fontFamily: 'monospace', color: 'var(--text-bold)', textShadow: '0 0 20px var(--primary-glow)', marginBottom: '1.5rem' }}>{otpToRender}</div>
+                                                      <motion.button
+                                                        onClick={() => { navigator.clipboard.writeText(otpToRender); showNotification('Copied to clipboard'); }}
+                                                        className="btn btn-primary otp-btn"
+                                                        whileHover={{ scale: 1.03, translateY: -2 }}
+                                                        whileTap={{ scale: 0.97, translateY: 0 }}
+                                                        style={{ padding: '1rem 3rem', borderRadius: '14px', fontSize: '1rem', display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'var(--primary)', color: '#000', border: 'none', cursor: 'pointer', boxShadow: '0 4px 15px rgba(182, 139, 245, 0.4)' }}
+                                                      >
+                                                        <Copy size={20} /> COPY CODE
+                                                      </motion.button>
                                                     </div>
                                                   ) : null}
 

@@ -1247,10 +1247,12 @@ main {
 
   /* OTP card */
   .otp-code-display {
-    font-size: 2rem !important;
-    letter-spacing: 0.15em !important;
+    font-size: clamp(1.4rem, 6.5vw, 2.2rem) !important;
+    letter-spacing: clamp(0.08em, 1.5vw, 0.2em) !important;
     max-width: 100% !important;
     overflow-wrap: break-word !important;
+    word-break: break-all !important;
+    text-align: center !important;
   }
 
   /* Detail View Header & Sender */
@@ -1352,6 +1354,39 @@ main {
   background: #16171d;
   height: 600px;
   width: 100%;
+}
+
+.inbox-thread-msg-bubble-wrapper {
+  max-width: 92%;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.inbox-thread-msg-bubble-content {
+  padding: 1.5rem 2rem;
+  border-radius: 20px;
+  width: fit-content;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.inbox-reply-container {
+  padding: 1.5rem 2rem;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .inbox-thread-msg-bubble-wrapper {
+    max-width: 100% !important;
+  }
+
+  .inbox-thread-msg-bubble-content {
+    padding: 1.25rem 1rem !important;
+  }
+
+  .inbox-reply-container {
+    padding: 1rem !important;
+  }
 }
 
 /* ============================================
@@ -1606,5 +1641,16 @@ main {
     right: 1.5rem;
     width: 48px;
     height: 48px;
+  }
+}
+
+/* OTP/Action Required Card responsive PC styling */
+.otp-card {
+  min-width: 400px;
+}
+
+@media (max-width: 768px) {
+  .otp-card {
+    min-width: unset !important;
   }
 }

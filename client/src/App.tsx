@@ -1,6 +1,6 @@
 import React, { lazy, Suspense } from 'react';
 import { HelmetProvider } from 'react-helmet-async';
-import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Loader2 } from 'lucide-react';
@@ -32,10 +32,32 @@ const LoadingFallback = () => (
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useAuth();
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
+  if (!isAuthenticated) return null;
   return <>{children}</>;
+};
+
+const PublicOnlyRoute = ({ children }: { children: React.ReactNode }) => {
+  const { isAuthenticated } = useAuth();
+  if (isAuthenticated) return null;
+  return <>{children}</>;
+};
+
+const AuthRedirector = () => {
+  const { isAuthenticated } = useAuth();
+  const location = useLocation();
+
+  React.useEffect(() => {
+    const protectedPaths = ['/inbox', '/sendmail', '/admin', '/profile'];
+    const publicOnlyPaths = ['/login', '/signup'];
+
+    if (!isAuthenticated && protectedPaths.includes(location.pathname)) {
+      window.location.replace('/login');
+    } else if (isAuthenticated && publicOnlyPaths.includes(location.pathname)) {
+      window.location.replace('/inbox');
+    }
+  }, [isAuthenticated, location.pathname]);
+
+  return null;
 };
 
 const AnimatedRoutes = () => {
@@ -47,8 +69,8 @@ const AnimatedRoutes = () => {
           <Route path="/" element={<PageWrapper><Home /></PageWrapper>} />
           <Route path="/inbox" element={<ProtectedRoute><PageWrapper><Inbox /></PageWrapper></ProtectedRoute>} />
           <Route path="/sendmail" element={<ProtectedRoute><PageWrapper><SendMail /></PageWrapper></ProtectedRoute>} />
-          <Route path="/login" element={<PageWrapper><Login /></PageWrapper>} />
-          <Route path="/signup" element={<PageWrapper><Signup /></PageWrapper>} />
+          <Route path="/login" element={<PublicOnlyRoute><PageWrapper><Login /></PageWrapper></PublicOnlyRoute>} />
+          <Route path="/signup" element={<PublicOnlyRoute><PageWrapper><Signup /></PageWrapper></PublicOnlyRoute>} />
           <Route path="/features" element={<PageWrapper><Features /></PageWrapper>} />
           <Route path="/admin" element={<ProtectedRoute><PageWrapper><AdminDashboard /></PageWrapper></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><PageWrapper><Profile /></PageWrapper></ProtectedRoute>} />
@@ -82,6 +104,7 @@ const AppContent: React.FC = () => {
 
   return (
     <div className="app-container">
+      <AuthRedirector />
       {!isLockdownPage && <Navbar />}
       <main>
         <AnimatedRoutes />

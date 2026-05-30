@@ -45,9 +45,9 @@ const Login: React.FC = () => {
   React.useEffect(() => {
     if (isAuthenticated) {
       if (user?.role === 'ADMIN') {
-        navigate('/admin');
+        navigate('/admin', { replace: true });
       } else {
-        navigate('/inbox');
+        navigate('/inbox', { replace: true });
       }
     }
   }, [isAuthenticated, user, navigate]);
@@ -62,9 +62,9 @@ const Login: React.FC = () => {
       showNotification(`System Access Granted. Welcome, ${res.data.user.username}.`);
 
       if (res.data.user.role === 'ADMIN') {
-        navigate('/admin');
+        navigate('/admin', { replace: true });
       } else {
-        navigate('/inbox');
+        navigate('/inbox', { replace: true });
       }
     } catch (err: any) {
       if (err.response?.status === 403) {
@@ -85,7 +85,7 @@ const Login: React.FC = () => {
       const res = await api.post('/auth/oauth/google', { token: credentialResponse.credential });
       login(res.data.user, res.data.token);
       showNotification("Logged in with Google successfully!", "success");
-      navigate('/inbox');
+      navigate('/inbox', { replace: true });
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Google authentication failed');
     }
