@@ -1,6 +1,6 @@
 import React, { lazy, Suspense } from 'react';
 import { HelmetProvider } from 'react-helmet-async';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Loader2 } from 'lucide-react';
@@ -45,21 +45,22 @@ const PublicOnlyRoute = ({ children }: { children: React.ReactNode }) => {
 const AuthRedirector = () => {
   const { isAuthenticated, user } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
 
   React.useEffect(() => {
     const protectedPaths = ['/inbox', '/sendmail', '/admin', '/profile'];
     const publicOnlyPaths = ['/login', '/signup'];
 
     if (!isAuthenticated && protectedPaths.includes(location.pathname)) {
-      window.location.replace('/login');
+      navigate('/login', { replace: true });
     } else if (isAuthenticated && publicOnlyPaths.includes(location.pathname)) {
       if (user?.role === 'ADMIN') {
-        window.location.replace('/admin');
+        navigate('/admin', { replace: true });
       } else {
-        window.location.replace('/inbox');
+        navigate('/inbox', { replace: true });
       }
     }
-  }, [isAuthenticated, location.pathname, user]);
+  }, [isAuthenticated, location.pathname, user, navigate]);
 
   return null;
 };
