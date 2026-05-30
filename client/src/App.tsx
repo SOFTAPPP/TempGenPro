@@ -43,7 +43,7 @@ const PublicOnlyRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 const AuthRedirector = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const location = useLocation();
 
   React.useEffect(() => {
@@ -53,9 +53,13 @@ const AuthRedirector = () => {
     if (!isAuthenticated && protectedPaths.includes(location.pathname)) {
       window.location.replace('/login');
     } else if (isAuthenticated && publicOnlyPaths.includes(location.pathname)) {
-      window.location.replace('/inbox');
+      if (user?.role === 'ADMIN') {
+        window.location.replace('/admin');
+      } else {
+        window.location.replace('/inbox');
+      }
     }
-  }, [isAuthenticated, location.pathname]);
+  }, [isAuthenticated, location.pathname, user]);
 
   return null;
 };

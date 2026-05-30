@@ -643,7 +643,7 @@ const Inbox: React.FC = () => {
     try {
       const res = await api.get('/emails');
       setEmails(res.data);
-      if (res.data.length > 0 && !selectedEmail) {
+      if (res.data.length > 0 && !selectedEmailRef.current) {
         if (window.innerWidth > 900) {
           setSelectedEmail(res.data[0]);
         }
@@ -653,7 +653,7 @@ const Inbox: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [selectedEmail]);
+  }, []);
 
   const fetchMessages = React.useCallback(async (emailId: number, silent = false) => {
     if (!silent) setMsgLoading(true);
